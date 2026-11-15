@@ -1,0 +1,131 @@
+package com.coolApps.MultipleAlarmClock.presentation.onboarding.components
+
+import com.coolApps.MultipleAlarmClock.presentation.onboarding.ButtonState
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.coolApps.MultipleAlarmClock.R
+
+data class StruggleOption(
+    val stringResId: Int,
+    val analyticsString: String
+)
+
+@Composable
+fun UserStrugglesScreen(
+    onButtonStateChange: (ButtonState) -> Unit,
+    onStrugglesSelected: (Set<String>) -> Unit
+) {
+	onButtonStateChange(ButtonState.Enabled)
+	val struggles = listOf(
+        StruggleOption(R.string.onboarding_struggle_waking_up, "Waking up on time"),
+        StruggleOption(R.string.onboarding_struggle_being_on_time, "Being on time"),
+        StruggleOption(R.string.onboarding_struggle_heavy_sleeper, "Heavy sleeper"),
+        StruggleOption(R.string.onboarding_struggle_ignoring_alarms, "Ignoring alarms"),
+        StruggleOption(R.string.onboarding_struggle_forgetting, "Forgetting things"),
+    )
+
+    var selectedStruggles by remember { mutableStateOf(emptySet<String>()) }
+
+    LaunchedEffect(selectedStruggles) {
+        onStrugglesSelected(selectedStruggles)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = stringResource(id = R.string.onboarding_struggles_title),
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(id = R.string.onboarding_struggles_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 340.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            items(struggles) { option ->
+                val stringResId = option.stringResId
+                val analyticsString = option.analyticsString
+                val isSelected = selectedStruggles.contains(analyticsString)
+                val localizedText = stringResource(id = stringResId)
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+                    ),
+                    border = if (isSelected) null else androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant
+                    ),
+                    onClick = {
+                        selectedStruggles = if (isSelected) {
+                            selectedStruggles - analyticsString
+                        } else {
+                            selectedStruggles + analyticsString
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = localizedText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = null // handled by card click
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

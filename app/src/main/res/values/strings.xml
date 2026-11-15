@@ -1,0 +1,286 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">Clock It</string>
+    <string name="msg_copied_clipboard">Message copied to clipboard</string>
+    <string name="msg_not_present">Alarm message not present</string>
+    <string name="update_downloaded_restart">Update downloaded. Restart to install it</string>
+    <string name="update_restart_action">Restart</string>
+    <string name="settings_content_description">Settings</string>
+    <string name="empty_state_title">Add an alarm</string>
+    <string name="empty_state_description">Tap \'Add alarm\' to set an alarm</string>
+    <string name="add_alarm_button_text">Add alarm</string>
+    <string name="date_label_today">Today</string>
+    <string name="date_label_yesterday">Yesterday</string>
+    <string name="date_label_tomorrow">Tomorrow</string>
+    <string name="clip_data_label">alarm message</string>
+
+
+    <!-- Alarm Validation Errors -->
+    <string name="alarm_error_fix_alarm_time">Choose an end time after <xliff:g id="start_time">%1$s</xliff:g></string>
+    <string name="alarm_error_frequency_range">Enter a value between 1 and 700 minutes</string>
+    <string name="alarm_error_date_mismatch">Start and end times must be on the same day</string>
+    <string name="alarm_error_past_date">Date value must be today or in the future.</string>
+    <string name="alarm_error_no_changes">No changes made. Change something to update the alarm.</string>
+
+    <!-- Frequency Preview -->
+    <string name="alarm_picker_frequency_preview">alarm will ring on <xliff:g id="days">%1$s</xliff:g></string>
+
+    <!-- Permission Dialog  -->
+    <string name="permission_dialog_title">Permission</string>
+    <string name="permission_dialog_description">To ensure your alarm works, the following permissions are needed:</string>
+    <string name="permission_dialog_autostart_advisory">Autostart is advisory. Your alarm will still work, but may not survive a reboot on Xiaomi devices.</string>
+    <string name="permission_dialog_btn_done">Done</string>
+    <string name="permission_dialog_btn_cancel">Cancel</string>
+    <string name="permission_dialog_done_desc">Done</string>
+    <string name="permission_dialog_btn_open_settings">Open settings</string>
+    <string name="permission_dialog_btn_allow">Allow</string>
+
+    <!-- Alarm Picker Screen -->
+    <string name="alarm_picker_title_set">New alarm</string>
+    <string name="alarm_picker_title_edit">Edit alarm</string>
+    <string name="alarm_picker_back_desc">Back</string>
+    <string name="alarm_picker_btn_set">Set alarm</string>
+    <string name="alarm_picker_btn_change">Change something</string>
+    <string name="alarm_picker_btn_fix">Fix the error</string>
+    <string name="alarm_picker_repeat_every">Ring every</string>
+    <string name="alarm_picker_ring_for">Snooze after</string>
+    <string name="alarm_picker_repeat_days">Repeat</string>
+    <string name="alarm_picker_sound">Sound</string>
+    <string name="alarm_picker_sound_random">Random</string>
+    <string name="alarm_picker_force_loud_volume">Max volume</string>
+    <string name="alarm_picker_force_loud_volume_desc">Rings at maximum volume, even if the phone\'s volume is set lower.</string>
+    <string name="alarm_picker_message">Message</string>
+    <string name="alarm_picker_message_placeholder">Add message</string>
+    <string name="alarm_picker_ok">Select</string>
+    <string name="alarm_picker_cancel">Cancel</string>
+    <string name="alarm_picker_delete_alarm">Delete</string>
+    <string name="alarm_picker_previous">Back</string>
+    <string name="alarm_picker_select_start_time">Select start time</string>
+    <string name="alarm_picker_select_end_time">Select end time</string>
+    <string name="alarm_picker_decrease_desc">Decrease</string>
+    <string name="alarm_picker_increase_desc">Increase</string>
+    <string name="alarm_picker_date">Date</string>
+
+    <!-- Onboarding Permission Screen -->
+    <string name="permission_continue">Continue</string>
+    <string name="onboarding_skip_alarm_creation">Skip for now</string>
+    <string name="permission_grant_permissions">Grant permissions</string>
+    <string name="permission_all_set">All set</string>
+    <string name="permission_title">Permissions</string>
+    <string name="permission_btn_settings">Settings</string>
+    <string name="permission_btn_open">Open</string>
+    <string name="permission_btn_allow">Allow</string>
+
+    <string name="onboarding_permission_reason">To send alarm notifications and schedule alarms</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_back_desc">Back</string>
+    <string name="settings_section_premium">Premium</string>
+    <string name="settings_premium_active">Premium Active</string>
+    <string name="settings_premium_go_pro">Go Pro</string>
+    <string name="settings_premium_manage_subscription">Manage your subscription</string>
+    <string name="settings_premium_unlock_features">Unlock all features and remove ads</string>
+    <string name="settings_section_feedback">Feedback</string>
+    <string name="settings_feedback_improve_app">Help improve the app</string>
+    <string name="settings_feedback_send">Send</string>
+    <string name="settings_version_format">v%1$s (%2$d)</string>
+
+    <!-- Permission Steps -->
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_rationale">Required to show the alarm notification. No spam</string>
+
+    <string name="perm_exact_alarm_title">Exact Alarms</string>
+    <string name="perm_exact_alarm_rationale">Required to ensure your alarm rings exactly on time, even in power-saving mode.</string>
+
+    <string name="perm_fsi_title">Display over other apps</string>
+    <string name="perm_fsi_rationale">Required to show the alarm clock on your lock screen.</string>
+
+    <string name="perm_xiaomi_title">Autostart (Xiaomi)</string>
+    <string name="perm_xiaomi_rationale">Xiaomi devices require Autostart to schedule alarms; without this, the app will not function properly</string>
+
+    <!-- Feedback Card -->
+    <string name="feedback_card">Feedback</string>
+    <string name="feedback_description">Tell us what you love and what needs work. From design tweaks to feature requests and bug fixes, help us improve the app </string>
+    <string name="feedback_placeholder">Tell us what you think </string>
+    <string name="feedback_char_count">%1$d / %2$d</string>
+    <string name="feedback_btn_maybe_later">Maybe later</string>
+    <string name="feedback_btn_submit">Submit</string>
+
+    <!-- In-app review prompt -->
+    <string name="in_app_review_rating_title">Feedback</string>
+    <string name="in_app_review_rating_description">How has you app experience been so far</string>
+    <string name="in_app_review_feedback_title">Tell us more</string>
+    <string name="in_app_review_feedback_description">What would you like us to improve. Your feedback helps us make the app better.</string>
+    <string name="in_app_review_feedback_placeholder">What could we improve?</string>
+    <string name="in_app_review_feedback_optional_hint">What could we improve</string>
+    <string name="in_app_review_not_now">Not now</string>
+    <string name="in_app_review_submit">Send feedback</string>
+    <string name="in_app_review_star_description">%1$d out of 5 stars</string>
+
+    <!-- Alarm Sound card   -->
+    <string name="alarm_sound_title">Alarm sound</string>
+    <string name="Sound_screen_Random">Random</string>
+    <string name="Sound_screen_selected">Now playing</string>
+    <string name="Sound_screen_preview">Tap to preview</string>
+    <string name="Sound_screen_Random_sound">Plays a different sound for each alarm.</string>
+    <string name="Sound_screen_Random_sound_choosen">Plays a different sound for each alarm.</string>
+
+    <!-- About & Rate App -->
+    <string name="about_section_title">About</string>
+    <string name="rate_app_title">Rate %1$s</string>
+    <string name="rate_app_subtitle">Rate us on Play Store</string>
+    <string name="about_version_title">Version</string>
+
+    <!-- Error Strategy Strings -->
+    <string name="error_title_generic">Error</string>
+    <string name="error_title_alarm">Error</string>
+    <string name="error_title_database">Error</string>
+    <string name="error_title_internal">Error</string>
+
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_alarm_schedule_failed">Couldn\'t set the alarm. Please try again.</string>
+    <string name="error_alarm_already_exists">An alarm is already set for this time.</string>
+    <string name="error_alarm_not_found">The alarm was not found.</string>
+    <string name="error_database_failure">Database operation failed. Please try again.</string>
+    <string name="error_internal">An internal error occurred. Please try again.</string>
+    <string name="error_invalid_settings">The alarm settings are invalid.</string>
+
+
+    <!-- Onboarding Struggles Screen -->
+    <string name="onboarding_struggles_title">What are your main challenges?</string>
+    <string name="onboarding_struggles_subtitle">Choose all that apply.</string>
+    <string name="onboarding_struggle_waking_up">Waking up on time</string>
+    <string name="onboarding_struggle_being_on_time">Being on time</string>
+    <string name="onboarding_struggle_heavy_sleeper">Heavy sleeper</string>
+    <string name="onboarding_struggle_ignoring_alarms">Ignoring alarms</string>
+    <string name="onboarding_struggle_forgetting">Forgetting things</string>
+
+    <!-- Onboarding User Profile (life stage) Screen -->
+    <string name="onboarding_profile_title">Which best describes you?</string>
+    <string name="onboarding_profile_subtitle">Helps tailor app to you.</string>
+    <string name="onboarding_profile_school">School student</string>
+    <string name="onboarding_profile_school_age">3–17</string>
+    <string name="onboarding_profile_college">College student</string>
+    <string name="onboarding_profile_college_age">18–24</string>
+    <string name="onboarding_profile_work">Working professional</string>
+    <string name="onboarding_profile_work_age">25–59</string>
+    <string name="onboarding_profile_parent">Homemaker / Parent</string>
+    <string name="onboarding_profile_parent_age">Any age</string>
+    <string name="onboarding_profile_retired">Retired</string>
+    <string name="onboarding_profile_retired_age">60+</string>
+    <string name="onboarding_profile_ages_format">Ages %1$s</string>
+    <string name="onboarding_profile_private_hint">Data stays private and it\'s not sold for ads.</string>
+
+    <!-- Onboarding Problem Screen -->
+    <string name="onboarding_problem_btn_set">Set my own</string>
+    <string name="onboarding_problem_btn_fix">Fix this</string>
+    <string name="onboarding_problem_wake_up">Wake up</string>
+    <string name="onboarding_problem_title">Tired of so many alarms.</string>
+    <string name="onboarding_problem_subtitle">Managing multiple alarms for a task takes time and effort.</string>
+    <string name="onboarding_problem_better_way_title">Better way</string>
+    <string name="onboarding_problem_better_way_subtitle">Select the time interval and how frequent you want the alarm and app handles the rest</string>
+    <string name="onboarding_problem_preview_interval">7:00 – 7:40</string>
+    <string name="onboarding_problem_preview_frequency">every 10 minutes</string>
+    <string name="onboarding_problem3_title">Wake up on time</string>
+    <string name="onboarding_problem3_title_alternate">Be on time</string>
+    <string name="onboarding_problem3_subtitle">Get repeating alarms — made for heavy sleepers.</string>
+    <string name="onboarding_problem3_subtitle_alternate">One alarm every minute until you\'re up.</string>
+
+    <!-- Onboarding Create First Alarm Intro -->
+    <string name="onboarding_create_alarm_title">Let\'s create your first alarm</string>
+    <!--    <string name="onboarding_create_alarm_subtitle">Set an alarm interval in just two simple steps.</string>-->
+    <string name="onboarding_create_alarm_step_start_title">Start time</string>
+    <string name="onboarding_create_alarm_step_start_desc">Select when you want the alarms to start, eg wake up time </string>
+    <string name="onboarding_create_alarm_step_end_title">End time</string>
+    <string name="onboarding_create_alarm_step_end_desc">When do you want your alarms to stop.(this must be ahead of start time)</string>
+    <string name="onboarding_create_alarm_step_flexible_title">Full flexibility</string>
+    <string name="onboarding_create_alarm_step_flexible_desc">you could change this later.</string>
+    <string name="onboarding_create_alarm_btn_continue">Get started</string>
+    <string name="onboarding_create_alarm_edit_note">You can change this later</string>
+
+    <string name="onboarding_create_alarm_opal_step_1">let\'s create your first alarm</string>
+    <string name="onboarding_create_alarm_opal_step_2">select when do you wake up, and when do you want the alarm to stop , we\'ll send you an aalrm every some min of your choosing</string>
+
+    <!-- Onboarding Result Screen -->
+    <string name="onboarding_result_finish">Finish</string>
+    <string name="onboarding_result_done">Done</string>
+    <string name="onboarding_result_title">You\'re all set!</string>
+    <string name="onboarding_result_subtitle">Your alarm was scheduled successfully.</string>
+    <string name="onboarding_result_scheduled_subtitle">Your alarm is scheduled.</string>
+    <string name="onboarding_result_ring_on">Alarms will ring at</string>
+    <string name="onboarding_result_notifications_on">You\'ll receive notifications at</string>
+    <string name="onboarding_result_every_min">Every %1$d minutes</string>
+    <string name="onboarding_result_show_more">Show %1$d more</string>
+    <string name="onboarding_result_show_less">Show less</string>
+    <string name="onboarding_result_more_notifications">%1$d more notifications</string>
+    <string name="onboarding_result_time_range">%1$s - %2$s</string>
+    <string name="onboarding_result_time_range_arrow">%1$s → %2$s</string>
+
+    <!-- Pre-hard Paywall -->
+    <string name="paywall_headline_plain">"We want you to\ntry the app "</string>
+    <string name="paywall_headline_highlight">for free</string>
+    <string name="paywall_subtitle">%1$s . everything unlocked</string>
+    <string name="paywall_demo_caption">Alarm every minute until you woke up. Helped 1000+ people</string>
+    <string name="paywall_no_payment_due">No payment due today</string>
+    <string name="paywall_cta_try_free">Try for free</string>
+    <string name="paywall_fine_print_with_price">%1$s, then %2$s. Cancel anytime.</string>
+    <string name="paywall_fine_print_no_price">%1$s. Cancel anytime.</string>
+
+    <!-- Paywall demo card -->
+    <string name="paywall_demo_repeat_badge">Repeat alarm</string>
+    <string name="paywall_demo_every_min">Every 1 min · %1$d alarms</string>
+    <string name="paywall_demo_notification_app">Alarm · wake up</string>
+    <string name="paywall_demo_repeat_count">Alarm %1$d of %2$d</string>
+    <string name="paywall_demo_stop">Stop</string>
+    <string name="paywall_demo_start_time">5:00</string>
+    <string name="paywall_demo_end_time">6:00</string>
+
+    <!-- Paywall trial offer details -->
+    <string name="paywall_free_trial_default">Free trial</string>
+    <string name="paywall_trial_headline">%1$s free</string>
+    <string name="paywall_price_note">%1$s/%2$s</string>
+    <string name="paywall_period_value_format">%1$d %2$s</string>
+    <string name="paywall_period_day">day</string>
+    <string name="paywall_period_days">days</string>
+    <string name="paywall_period_week">week</string>
+    <string name="paywall_period_weeks">weeks</string>
+    <string name="paywall_period_month">month</string>
+    <string name="paywall_period_months">months</string>
+    <string name="paywall_period_year">year</string>
+    <string name="paywall_period_years">years</string>
+    <string name="paywall_period_unknown">period</string>
+
+    <!-- Offline Engagement / Push Notifications -->
+    <!-- Morning -->
+    <string name="offline_notification_morning_title_1">Good Morning</string>
+    <string name="offline_notification_morning_msg_1">Get an alarm every 5 min to be on time</string>
+    <string name="offline_notification_morning_title_2">Morning routine check</string>
+    <string name="offline_notification_morning_msg_2">Don\'t let snoozing slow you down. Make sure your intervals are active.</string>
+    <string name="offline_notification_morning_title_3">Good morning!</string>
+    <string name="offline_notification_morning_msg_3">A productive day starts with timely alarms. Plan your morning.</string>
+    <string name="offline_notification_morning_title_4">Start your day right</string>
+    <string name="offline_notification_morning_msg_4">Get an alarm every 5 min to be on time.</string>
+
+    <!-- Evening -->
+    <string name="offline_notification_evening_title_1">Evening wind-down</string>
+    <string name="offline_notification_evening_msg_1">Getting ready for tomorrow? Set up your wake-up intervals before you relax.</string>
+    <string name="offline_notification_evening_title_2">Plan ahead tonight</string>
+    <string name="offline_notification_evening_msg_2">Avoid the morning rush by setting your alarms ahead of time.</string>
+    <string name="offline_notification_evening_title_5">Reminder</string>
+    <string name="offline_notification_evening_msg_5">Set your alarms tonight so you can wake up stress-free.</string>
+
+    <!-- Night -->
+    <string name="offline_notification_night_title_1">Reminder</string>
+    <string name="offline_notification_night_msg_1">schedule alarm for tomorrow morning.</string>
+    <string name="offline_notification_night_title_2">Reminder</string>
+    <string name="offline_notification_night_msg_2">Make sure your alarms are active</string>
+
+    <!-- Trial Reminder -->
+    <string name="trial_reminder_title">Trial reminder</string>
+    <string name="trial_reminder_message">Your trial will end soon</string>
+
+    <!-- Alarm Activity -->
+    <string name="stop_button">Stop</string>
+
+
+</resources>

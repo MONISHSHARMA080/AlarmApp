@@ -1,0 +1,15 @@
+/build
+/app/src/main/res/raw
+app/src/main/res/raw
+app/src/main/res/raw/
+*.keystore
+*.jks
+signing.properties
+keystore-base64.txt
+temp.txt
+keystore-base64.txt
+my-release-key.keystore
+keystore_base64.txt
+keystore.jks
+keystore.jks
+keystore_base64.txt

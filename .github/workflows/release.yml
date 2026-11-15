@@ -1,0 +1,289 @@
+name: Release Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'jetbrains'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew test --parallel
+
+  baseline-profile:
+    name: Baseline Profile
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'jetbrains'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          sudo usermod -aG kvm $USER
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
+
+      - name: Generate Baseline Profile
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+        run: |
+          ./gradlew :app:generateReleaseBaselineProfile \
+            -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect" \
+            -PskipPostHog=true \
+            --stacktrace
+
+      - name: Upload Baseline Profile
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-profile
+          path: app/src/release/generated/baselineProfiles/
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------------
+  # Build – waits only for the baseline profile (it bakes it in), runs in
+  # parallel with the unit tests. Produces signed APK/AAB as artifacts.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: baseline-profile
+    if: ${{ !cancelled() && (needs.baseline-profile.result == 'success' || needs.baseline-profile.result == 'skipped') }}
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+      changelog: ${{ steps.version.outputs.changelog }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'jetbrains'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Determine version
+        id: version
+        run: |
+          # Get the last semver tag, default to v0.0.0 if none
+          LAST_TAG=$(git tag --list 'v*.*.*' --sort=-version:refname | head -n1)
+          LAST_TAG=${LAST_TAG:-v0.0.0}
+          echo "Last tag: $LAST_TAG"
+          # Strip the 'v' prefix and split into parts
+          VERSION=${LAST_TAG#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          # Look at all commits since the last tag
+          COMMITS=$(git log "$LAST_TAG"..HEAD --pretty=format:"%s %b" 2>/dev/null || git log --pretty=format:"%s %b")
+          # Determine bump type by scanning commit messages
+          BUMP="none"
+          if echo "$COMMITS" | grep -qiE "BREAKING CHANGE:|^.+!:"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qiE "^feat(\(.+\))?:"; then
+            BUMP="minor"
+          elif echo "$COMMITS" | grep -qiE "^fix(\(.+\))?:|^perf(\(.+\))?:"; then
+            BUMP="patch"
+          fi
+          echo "Bump type: $BUMP"
+          # Apply the bump
+          if [ "$BUMP" = "major" ]; then
+            MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0
+          elif [ "$BUMP" = "minor" ]; then
+            MINOR=$((MINOR + 1)); PATCH=0
+          elif [ "$BUMP" = "patch" ]; then
+            PATCH=$((PATCH + 1))
+          else
+            # No conventional commits found — default to patch bump
+            PATCH=$((PATCH + 1))
+          fi
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          # Version code = unique integer for Play Store
+          # Using commit count so it always increases
+          BASE_OFFSET=3000
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          VERSION_CODE=$((BASE_OFFSET + COMMIT_COUNT))
+
+          echo "version_name=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          { git log "$LAST_TAG"..HEAD --pretty=format:"- %s" 2>/dev/null || git log --pretty=format:"- %s"; } >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "New version: v$NEW_VERSION (code: $VERSION_CODE)"
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
+
+      - name: Install PostHog CLI
+        run: |
+          npm install -g @posthog/cli
+          posthog-cli --version
+
+      - name: Download Baseline Profile
+        if: github.ref == 'refs/heads/main'
+        uses: actions/download-artifact@v4
+        with:
+          name: baseline-profile
+          path: app/src/release/generated/baselineProfiles/
+        continue-on-error: true
+
+      - name: Build Release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_CLI_HOST: https://us.posthog.com
+          POSTHOG_CLI_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
+          POSTHOG_CLI_API_KEY: ${{ secrets.POSTHOG_CLI_API_KEY }}
+          POSTHOG_RELEASE: "MultipleAlarm_Native@${{ github.sha }}"
+        run: |
+          ./gradlew clean assembleRelease bundleRelease \
+            -PversionCode=${{ steps.version.outputs.version_code }} \
+            -PversionName=${{ steps.version.outputs.version_name }}
+
+      - name: Rename APK
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk \
+             "Multiple-Alarms-${{ steps.version.outputs.version_name }}.apk"
+
+      - name: Rename AAB
+        run: |
+          cp app/build/outputs/bundle/release/app-release.aab \
+             "Multiple-Alarms-${{ steps.version.outputs.version_name }}.aab"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Multiple-Alarms-${{ steps.version.outputs.version_name }}-APK
+          path: Multiple-Alarms-${{ steps.version.outputs.version_name }}.apk
+          retention-days: 30
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Multiple-Alarms-${{ steps.version.outputs.version_name }}-AAB
+          path: Multiple-Alarms-${{ steps.version.outputs.version_name }}.aab
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Publish – only on main, and only if BOTH the unit tests and the build passed.
+  # ---------------------------------------------------------------------------
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: [unit-test, build]
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && needs.unit-test.result == 'success' && needs.build.result == 'success' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download APK and AAB
+        uses: actions/download-artifact@v4
+        with:
+          pattern: Multiple-Alarms-*
+          path: dist
+          merge-multiple: true
+
+      - name: Push Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TAG="${{ needs.build.outputs.version_name }}"
+          # Only push if tag doesn't exist yet
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.version_name }}
+          name: Release ${{ needs.build.outputs.version_name }}
+          body: |
+            ## Release ${{ needs.build.outputs.version_name }}
+            ### Info
+            - Version Name: ${{ needs.build.outputs.version_name }}
+            - Version Code: ${{ needs.build.outputs.version_code }}
+            - Commit: ${{ github.sha }}
+
+            ### Changes
+            ${{ needs.build.outputs.changelog }}
+
+            ### Downloads
+            - **APK**: For direct installation on Android devices
+            - **AAB**: For Google Play Store distribution
+          files: |
+            dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.apk
+            dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.aab
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to Play Store Internal Track
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.coolApps.MultipleAlarmClock
+          releaseFiles: dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.aab
+          releaseName: ${{ needs.build.outputs.version_name }}
+          tracks: internal
+          status: completed

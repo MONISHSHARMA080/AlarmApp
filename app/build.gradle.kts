@@ -1,0 +1,290 @@
+
+import com.android.build.api.dsl.ApplicationExtension
+
+plugins {
+    alias(libs.plugins.android.application)
+
+    id("com.google.devtools.ksp") version "2.3.9"
+    id ("kotlin-parcelize")
+    id("com.posthog.android") version "1.7.0"
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
+	id("com.google.protobuf") version "0.10.0"
+    id("com.google.dagger.hilt.android")
+	id("androidx.room")
+//	id("com.android.application")
+	id("com.google.gms.google-services")
+}
+
+val myAppName="Clock It"
+configureAndroid()
+fun Project.configureAndroid() {
+
+    val revenueCatApiKey = System.getenv("REVENUECAT_API_KEY")
+        ?: project.findProperty("REVENUECAT_API_KEY")?.toString()
+        ?: "test_iTBvEbpLqrrFccKaYXPOWMgAYBI"
+
+    val postHogApiKey = System.getenv("POSTHOG_API_KEY")
+        ?: project.findProperty("POSTHOG_API_KEY")?.toString()
+        ?: ""
+
+    val skipPostHog = project.findProperty("skipPostHog")?.toString() == "true"
+    val resolvedPostHogKey = if (skipPostHog) "" else postHogApiKey
+
+    androidComponents {
+        onVariants { variant ->
+            variant.buildConfigFields?.put(
+                "REVENUECAT_API_KEY",
+                com.android.build.api.variant.BuildConfigField("String", "\"$revenueCatApiKey\"", "")
+            )
+            if (variant.name == "release") {
+                variant.buildConfigFields?.put(
+                    "SKIP_POSTHOG",
+                    com.android.build.api.variant.BuildConfigField("boolean", skipPostHog.toString(), "")
+                )
+                variant.buildConfigFields?.put(
+                    "POSTHOG_API_KEY",
+                    com.android.build.api.variant.BuildConfigField("String", "\"$resolvedPostHogKey\"", "")
+                )
+            } else {
+                variant.buildConfigFields?.put(
+                    "SKIP_POSTHOG",
+                    com.android.build.api.variant.BuildConfigField("boolean", "true", "")
+                )
+                variant.buildConfigFields?.put(
+                    "POSTHOG_API_KEY",
+                    com.android.build.api.variant.BuildConfigField("String", "\"\"", "")
+                )
+            }
+        }
+    }
+
+    extensions.configure<ApplicationExtension> {
+
+        namespace = "com.coolApps.MultipleAlarmClock"
+        compileSdk {
+            version = release(37) {
+                minorApiLevel = 1
+            }
+        }
+
+        defaultConfig {
+            applicationId = "com.coolApps.MultipleAlarmClock"
+            minSdk = 33
+            targetSdk = 37
+            versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
+            versionName = project.findProperty("versionName") as String? ?: "1.0.0"
+            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            vectorDrawables {
+                useSupportLibrary = true
+            }
+        }
+
+		signingConfigs {
+			create("release") {
+				val keystoreFile = file("release.keystore")
+				if (keystoreFile.exists()) {
+					storeFile = keystoreFile
+					storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+						?: project.findProperty("android.injected.signing.store.password")?.toString()
+					keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+						?: project.findProperty("android.injected.signing.key.alias")?.toString()
+					keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+						?: project.findProperty("android.injected.signing.key.password")?.toString()
+				} else {
+					// Local development - use debug keystore
+					storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+					storePassword = "android"
+					keyAlias = "androiddebugkey"
+					keyPassword = "android"
+				}
+			}
+		}
+
+
+		buildTypes {
+            release {
+                resValue("string", "app_name", myAppName)
+                isShrinkResources = true
+                isMinifyEnabled = true
+                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                signingConfig = signingConfigs.getByName("release")
+                ndk {
+                    // Packs native debug symbols into the AAB so Play Console can symbolicate native crashes/ANRs
+                    debugSymbolLevel = "FULL"
+                }
+            }
+            debug {
+				resValue("string", "app_name", myAppName)
+            }
+        }
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_21
+            targetCompatibility = JavaVersion.VERSION_21
+        }
+
+        buildFeatures {
+            compose = true
+            buildConfig = true
+            resValues = true
+        }
+        packaging {
+            resources {
+                excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            }
+        }
+        configurations.all {
+            resolutionStrategy {
+                force("androidx.test.espresso:espresso-core:3.6.1")
+            }
+        }
+        testOptions {
+            unitTests {
+                isIncludeAndroidResources = true
+                // Add these for Robolectric
+                all {
+                    it.systemProperty("robolectric.logging", "stdout")
+                    it.systemProperty("robolectric.graphicsMode", "NATIVE")
+                    it.jvmArgs("-noverify", "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+                    it.testLogging {
+                        events("passed", "skipped", "failed")
+                        showStandardStreams = true
+                        showExceptions = true
+                        showStackTraces = true
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+room {
+	schemaDirectory("$projectDir/schemas")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
+}
+
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:4.34.1"
+	}
+	generateProtoTasks {
+		all().forEach { task ->
+			task.builtins {
+				create("java") {
+					option("lite")
+				}
+				create("kotlin")
+			}
+		}
+	}
+}
+
+
+
+dependencies {
+	configurations.configureEach {
+		exclude(group = "com.google.protobuf", module = "protobuf-lite")
+	}
+	implementation(platform(libs.firebase.bom))
+	implementation(libs.androidx.compose.animation)
+	implementation(libs.androidx.compose.foundation)
+	implementation(libs.androidx.compose.runtime)
+	implementation(libs.androidx.compose.runtime.saveable)
+	implementation(libs.firebase.messaging)
+    implementation(libs.hilt.android)
+	implementation(libs.purchases)
+	implementation(libs.purchases.ui)
+	implementation(libs.androidx.compose.animation.core)
+	implementation(libs.androidx.compose.ui)
+	implementation(libs.androidx.datastore.core)
+	implementation(libs.androidx.hilt.work)
+	implementation(libs.play.services.appset)
+	implementation(libs.ui)
+	ksp(libs.androidx.hilt.compiler)
+	implementation(libs.androidx.hilt.navigation.compose)
+	ksp(libs.hilt.android.compiler)     // main source set (KSP only, no kapt)
+
+	implementation(libs.review)
+	implementation(libs.review.ktx)
+	implementation(libs.app.update)
+	implementation(libs.app.update.ktx)
+
+
+    implementation(libs.accompanist.permissions)
+
+    implementation (libs.posthog.android)
+    implementation(libs.androidx.core.splashscreen)
+
+	implementation(libs.androidx.media3.common)
+
+    implementation(libs.androidx.datastore)
+	implementation(libs.protobuf.kotlin.lite.v4321)
+
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.androidx.espresso.contrib)
+    implementation(libs.androidx.ui.test.junit4.android)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation.layout)
+	implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+	implementation(libs.androidx.ui.text)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.profileinstaller)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    "baselineProfile"(project(":baselineprofile"))
+    implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // -- robolectric tests ---
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.mockk)
+    testImplementation(libs.truth)
+    testImplementation(libs.hilt.android.testing)
+    kspTest(libs.hilt.android.compiler)
+
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.adaptive.navigation3)
+    implementation(libs.kotlinx.serialization.core)
+
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.ui.test.android)
+    implementation(libs.kotlinx.coroutines.android)
+
+//	val roomVersion = "3.0.1"
+    val roomVersion = "2.8.4"
+    implementation("androidx.room:room-runtime:$roomVersion")
+//    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-rxjava2:$roomVersion")
+    implementation("androidx.room:room-rxjava3:$roomVersion")
+    implementation("androidx.room:room-guava:$roomVersion")
+    testImplementation("androidx.room:room-testing:$roomVersion")
+    implementation("androidx.room:room-paging:$roomVersion")
+	testImplementation("androidx.multidex:multidex:2.0.1")
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.androidx.uiautomator.v240alpha05)
+}

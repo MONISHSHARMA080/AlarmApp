@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="splash_background">#FF000000</color>
+    <color name="splash_icon_background">#FFFFFFFF</color>
+    <color name="notification_accent">#FFFFFFFF</color>
+    <color name="splash_clock_rim">#FF000000</color>
+    <color name="splash_clock_face">#FF000000</color>
+    <color name="splash_clock_hands">#FFFFFFFF</color>
+    <color name="splash_clock_pivot_rim">#FFAEAEB2</color>
+    <color name="splash_clock_pivot_core">#FF2C2C2E</color>
+</resources>
+

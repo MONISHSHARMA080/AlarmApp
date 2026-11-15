@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_package = "com.coolApps.MultipleAlarmClock.data.preferences";
+option java_multiple_files = true;
+
+enum OnboardingFlow {
+  ONBOARDING_FLOW_UNSPECIFIED = 0;
+  ONBOARDING_FLOW_VARIANT_LONG = 1;
+  ONBOARDING_FLOW_VARIANT_SHORT = 2;
+  ONBOARDING_FLOW_VARIANT_V3 = 3;
+}
+
+message Settings {
+  bool is_first_launch = 1;
+  int64 install_epoch_time_ms = 7;
+  int64 last_review_attempted_at = 8;
+  int64 last_feedback_prompt_attempted_at = 9;
+  OnboardingFlow onboarding_flow = 10;
+
+  reserved 2, 3, 4, 5, 6;
+  reserved "all_permissions_granted", "first_alarm_set", "first_alarm_notification_received", "should_we_show_feedback_card", "should_we_show_in_app_review";
+}
