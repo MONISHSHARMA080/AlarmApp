@@ -102,8 +102,8 @@ fun TimePickerWithoutDialog(
 			exit = shrinkVertically(spatialSpec) + fadeOut(effectsSpec)
 		) {
 			val locale = LocalLocale.current.platformLocale
-			val startTimeString = remember(uiState.alarmData.startTime, locale) {
-				SimpleDateFormat("h:mm a", locale).format(uiState.alarmData.startTime)
+			val alarmTimeString = remember(uiState.alarmData.alarmTime, locale) {
+				SimpleDateFormat("h:mm a", locale).format(uiState.alarmData.alarmTime)
 			}
 			Surface(
 				shape = RoundedCornerShape(16.dp),
@@ -111,7 +111,7 @@ fun TimePickerWithoutDialog(
 				modifier = Modifier.padding(top = 16.dp)
 			) {
 				Text(
-					text = stringResource(R.string.alarm_error_fix_alarm_time, startTimeString),
+					text = stringResource(R.string.alarm_error_fix_alarm_time, alarmTimeString),
 					style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
 					color = colorScheme.onErrorContainer,
 					modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -126,9 +126,8 @@ fun TimePickerWithoutDialog(
 @Composable
 fun LinearProgressForNewAlarm(modifier: Modifier = Modifier, progress: Progress) {
 	val (step, total) = when (progress) {
-		Progress.StartTime -> 1 to 3
-		Progress.EndTime -> 2 to 3
-		Progress.FullEditor -> 3 to 3
+		Progress.StartTime -> 1 to 2
+		Progress.FullEditor -> 2 to 2
 	}
 
 	val progressFraction by animateFloatAsState(

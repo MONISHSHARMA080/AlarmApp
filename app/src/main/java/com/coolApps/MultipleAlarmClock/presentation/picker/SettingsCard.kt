@@ -49,7 +49,6 @@ import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -128,7 +127,6 @@ fun SettingsCard(
 		selectedSoundName: String,
 		messageValueChanged: (String) -> Unit,
 		updateIsForceLoudVolume: (Boolean) -> Unit,
-		updateFrequency: (Long) -> Unit,
 		updateRingDuration: (Long) -> Unit,
 		calenderButtonClicked: () -> Unit,
 		selectSoundButtonClicked: () -> Unit,
@@ -183,26 +181,6 @@ fun SettingsCard(
 				color = colorScheme.surfaceContainer,
 				modifier = Modifier.fillMaxWidth()
 			) {
-				MinuteStepperRow(
-					icon = Icons.Rounded.Timer,
-					title = stringResource(
-						R.string.alarm_picker_repeat_every
-					),
-					value = uiState.alarmData.frequencyInMin,
-					onValueChange = { newValue ->
-						if (newValue in 0..<720) {
-							updateFrequency(newValue)
-						}
-					},
-					hasError = uiState.validationResult is AlarmDataValidationResult.Frequency
-				)
-			}
-
-			Surface(
-				shape = SegmentedMiddleShape,
-				color = colorScheme.surfaceContainer,
-				modifier = Modifier.fillMaxWidth()
-			) {
 				SettingRow(
 					icon = Icons.Rounded.CalendarMonth,
 					title = stringResource(
@@ -211,7 +189,7 @@ fun SettingsCard(
 					value = SimpleDateFormat(
 						"EEE, MMM d, yyyy",
 						LocalLocale.current.platformLocale
-					).format(uiState.alarmData.startTime),
+					).format(uiState.alarmData.alarmTime),
 					onClick = calenderButtonClicked
 				)
 			}

@@ -34,7 +34,7 @@ class AlarmInfoNotification: BroadcastReceiver()  {
 
     private fun displayAlarmsMetadataInNotification(alarmData: AlarmData){
         val title = "Upcoming alarm info"
-        val notificationText ="Alarm:${alarmData.id} will go from  ${getTimeInHumanReadableFormatProtectFrom0Included(alarmData.startTime)} --->  ${getTimeInHumanReadableFormatProtectFrom0Included(alarmData.endTime)} after every ${alarmData.frequencyInMin} min  "
+        val notificationText ="Alarm:${alarmData.id} will ring at ${getTimeInHumanReadableFormatProtectFrom0Included(alarmData.alarmTime)}"
         val notification = notificationHandler.build(NotificationChannelType.GeneralNotification,title, notificationText)
         notificationHandler.show(notification)
         analytics.captureEvent("user asked for upcoming notification meta-data notification", mapOf(

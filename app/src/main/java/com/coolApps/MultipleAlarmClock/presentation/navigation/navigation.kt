@@ -55,9 +55,6 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 	if (isFirstLaunch == null) return
 	if (isFirstLaunch == true && onboardingFlow == OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) return
 
-	// Start keys. A deep link lands with only one destination on the stack, so build a
-	// synthetic back stack (Home below the deep-linked screen) so Back/Up always has
-	// somewhere to go. See nav3-recipes docs/deeplink-guide.md.
 	val startKeys = remember(deepLinkScreen, isFirstLaunch, onboardingFlow) {
 		when {
 			deepLinkScreen != null && deepLinkScreen != Screen.AlarmContainer ->

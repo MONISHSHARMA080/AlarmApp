@@ -22,15 +22,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -69,45 +65,46 @@ import java.util.Calendar
 fun TimeRow(
 	uiState: AlarmPickerUiState,
 	onStartTimeChange: (Calendar) -> Unit,
-	onEndTimeChange: (Calendar) -> Unit,
 	onDisabledTimeSelected: () -> Unit,
 	sharedTransitionScope: SharedTransitionScope? = null,
 	animatedVisibilityScope: AnimatedVisibilityScope? = null,
 	alarmId: Int? = null,
-	boundsTransform: BoundsTransform = AlarmTimeBoundsTransform
+	boundsTransform: BoundsTransform = AlarmTimeBoundsTransform,
+	showStartTimePicker: Boolean? = null,
+	onShowStartTimePickerChange: (Boolean) -> Unit = {}
 ) {
-	val startTime = uiState.alarmData.startTimeCalendar
-	val endTime = uiState.alarmData.endTimeCalendar
+	val alarmTime = uiState.alarmData.alarmTimeCalendar
 
 	val density = LocalDensity.current
 	val containerSize = LocalWindowInfo.current.containerSize
 	val screenHeightDp = with(density) { containerSize.height.toDp() }
 	val screenWidthDp = with(density) { containerSize.width.toDp() }
-	val baseTimeStyle = if (screenWidthDp < 380.dp) typography.displaySmall else typography.displayMedium
+	// M3 Expressive style – Google Clock uses the largest display scale for the alarm time (hero moment)
+	val baseTimeStyle = if (screenWidthDp < 380.dp) typography.displayMediumEmphasized else typography.displayLargeEmphasized
 	val timeStyle = baseTimeStyle.copy(fontWeight = FontWeight.Black)
-	val amPmStyle = typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+	val amPmStyle = typography.titleLarge.copy(fontWeight = FontWeight.Black)
 
 	val titleSpacing = (screenHeightDp * 0.03f).coerceIn(12.dp, 28.dp)
 
-	val endTimePickerState = rememberTimePickerState(
-		initialHour = endTime.get(Calendar.HOUR_OF_DAY),
-		initialMinute = endTime.get(Calendar.MINUTE),
-		is24Hour = false
-	)
-
 	val timePickerState =
 		rememberTimePickerState(
-			initialHour = startTime.get(Calendar.HOUR_OF_DAY),
-			initialMinute = startTime.get(Calendar.MINUTE),
+			initialHour = alarmTime.get(Calendar.HOUR_OF_DAY),
+			initialMinute = alarmTime.get(Calendar.MINUTE),
 			is24Hour = false
 		)
 
-	var showStartTimePicker by remember { mutableStateOf(false) }
-	var showEndTimePicker by remember { mutableStateOf(false) }
+	var internalShowPicker by remember { mutableStateOf(false) }
+	val showPicker: Boolean = showStartTimePicker ?: internalShowPicker
+	val setShowPicker: (Boolean) -> Unit = { value ->
+		onShowStartTimePickerChange(value)
+		if (showStartTimePicker == null) {
+			internalShowPicker = value
+		}
+	}
 
-	val doWeHaveError = uiState.validationResult is AlarmDataValidationResult.TimeIntervalError
-	val errorMessage = if (uiState.validationResult is AlarmDataValidationResult.TimeIntervalError) {
-		uiState.validationResult.errorMessageToDisplayToUser.asString()
+	val doWeHaveError = uiState.validationResult is AlarmDataValidationResult.IntervalNotInFuture
+	val errorMessage = if (doWeHaveError) {
+		uiState.validationResult.errorMessage()
 	} else {
 		""
 	}
@@ -115,7 +112,7 @@ fun TimeRow(
 	val spatialIntSizeSpec = MaterialTheme.motionScheme.defaultSpatialSpec<IntSize>()
 	val effectsFloatSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
-	if (showStartTimePicker) {
+	if (showPicker) {
 		val confirmInteraction = remember { MutableInteractionSource() }
 		val isConfirmPressed by confirmInteraction.collectIsPressedAsState()
 		val confirmCorner by animateDpAsState(
@@ -133,19 +130,19 @@ fun TimeRow(
 		)
 
 		TimePickerDialog(
-			onDismissRequest = { showStartTimePicker = false },
+			onDismissRequest = { setShowPicker(false) },
 			shape = RoundedCornerShape(32.dp),
 			containerColor = colorScheme.surfaceContainerHigh,
 			confirmButton = {
 				Button(
 					onClick = {
 						val newTime =
-							(startTime.clone() as Calendar).apply {
+							(alarmTime.clone() as Calendar).apply {
 								set(Calendar.HOUR_OF_DAY, timePickerState.hour)
 								set(Calendar.MINUTE, timePickerState.minute)
 							}
 						onStartTimeChange(newTime)
-						showStartTimePicker = false
+						setShowPicker(false)
 					},
 					interactionSource = confirmInteraction,
 					shape = RoundedCornerShape(confirmCorner),
@@ -159,7 +156,7 @@ fun TimeRow(
 			},
 			dismissButton = {
 				FilledTonalButton(
-					onClick = { showStartTimePicker = false },
+					onClick = { setShowPicker(false) },
 					interactionSource = dismissInteraction,
 					shape = RoundedCornerShape(dismissCorner),
 					contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
@@ -196,109 +193,6 @@ fun TimeRow(
 		}
 	}
 
-	if (showEndTimePicker) {
-		// live-compute validity as the user spins the dial
-		val candidateEnd = (endTime.clone() as Calendar).apply {
-			set(Calendar.HOUR_OF_DAY, endTimePickerState.hour)
-			set(Calendar.MINUTE, endTimePickerState.minute)
-		}
-		val isCandidateInvalid = candidateEnd.timeInMillis <= startTime.timeInMillis
-
-		val confirmInteraction = remember { MutableInteractionSource() }
-		val isConfirmPressed by confirmInteraction.collectIsPressedAsState()
-		val confirmCorner by animateDpAsState(
-			targetValue = if (isConfirmPressed) 12.dp else 20.dp,
-			animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-			label = "end_confirm_corner"
-		)
-
-		val dismissInteraction = remember { MutableInteractionSource() }
-		val isDismissPressed by dismissInteraction.collectIsPressedAsState()
-		val dismissCorner by animateDpAsState(
-			targetValue = if (isDismissPressed) 12.dp else 20.dp,
-			animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-			label = "end_dismiss_corner"
-		)
-
-		TimePickerDialog(
-			onDismissRequest = { showEndTimePicker = false },
-			shape = RoundedCornerShape(32.dp),
-			containerColor = colorScheme.surfaceContainerHigh,
-			confirmButton = {
-				Button(
-					onClick = {
-						onEndTimeChange(candidateEnd)
-						showEndTimePicker = false
-					},
-					enabled = !isCandidateInvalid,
-					interactionSource = confirmInteraction,
-					shape = RoundedCornerShape(confirmCorner),
-					contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-				) {
-					Text(
-						text = stringResource(R.string.alarm_picker_ok),
-						style = typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold)
-					)
-				}
-			},
-			dismissButton = {
-				FilledTonalButton(
-					onClick = { showEndTimePicker = false },
-					interactionSource = dismissInteraction,
-					shape = RoundedCornerShape(dismissCorner),
-					contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
-				) {
-					Text(
-						text = stringResource(R.string.alarm_picker_cancel),
-						style = typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-					)
-				}
-			},
-			title = {
-				Column {
-					Text(
-						text = stringResource(R.string.alarm_picker_select_end_time),
-						style = typography.titleMedium,
-						color = colorScheme.onSurfaceVariant,
-					)
-					AnimatedVisibility(
-						visible = isCandidateInvalid,
-						enter = expandVertically(spatialIntSizeSpec) + fadeIn(effectsFloatSpec),
-						exit = shrinkVertically(spatialIntSizeSpec) + fadeOut(effectsFloatSpec)
-					) {
-						val locale = LocalLocale.current.platformLocale
-						val startTimeString = remember(startTime, locale) {
-							SimpleDateFormat("h:mm a", locale).format(startTime.time)
-						}
-						Text(
-							text = stringResource(R.string.alarm_error_fix_alarm_time, startTimeString),
-							style = typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-							color = colorScheme.error,
-							modifier = Modifier.padding(top = 6.dp)
-						)
-					}
-					Spacer(modifier = Modifier.height(titleSpacing))
-				}
-			}
-		) {
-			val view = LocalView.current
-			var isFirstRun by remember { mutableStateOf(true) }
-			LaunchedEffect(endTimePickerState.hour, endTimePickerState.minute) {
-				if (isFirstRun) {
-					isFirstRun = false
-				} else {
-					view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-				}
-			}
-			TimePicker(
-				state = endTimePickerState,
-				minHour = timePickerState.hour,
-				minMinute = if (timePickerState.minute == 59) 59 else timePickerState.minute + 1,
-				onDisabledTimeSelected = onDisabledTimeSelected
-			)
-		}
-	}
-
 	// Helper to conditionally apply sharedElement modifier
 	val canAnimate = sharedTransitionScope != null && animatedVisibilityScope != null && alarmId != null
 
@@ -306,104 +200,43 @@ fun TimeRow(
 	val amPmColor = if (doWeHaveError) colorScheme.error else colorScheme.onBackground
 
 	Row(
-		modifier = Modifier.fillMaxWidth(),
-		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier
+			.fillMaxWidth()
+			.padding(top = 16.dp, start = 8.dp, end = 8.dp)
+			.clickable { setShowPicker(true) },
+		verticalAlignment = Alignment.Bottom,
+		horizontalArrangement = Arrangement.Center
 	) {
 		Row(
 			verticalAlignment = Alignment.Bottom,
-			modifier = Modifier
-				.weight(1f)
-				.clickable { showStartTimePicker = !showStartTimePicker },
-			horizontalArrangement = Arrangement.Start
+			modifier = Modifier.then(
+				if (canAnimate) {
+					with(sharedTransitionScope) {
+						Modifier.sharedElement(
+							sharedContentState = rememberSharedContentState(key = "start_time_${alarmId}"),
+							animatedVisibilityScope = animatedVisibilityScope,
+							boundsTransform = boundsTransform
+						)
+					}
+				} else Modifier
+			)
 		) {
-			Row(
-				verticalAlignment = Alignment.Bottom,
-				modifier = Modifier.then(
-					if (canAnimate) {
-						with(sharedTransitionScope) {
-							Modifier.sharedElement(
-								sharedContentState = rememberSharedContentState(key = "start_time_${alarmId}"),
-								animatedVisibilityScope = animatedVisibilityScope,
-								boundsTransform = boundsTransform
-							)
-						}
-					} else Modifier
-				)
-			) {
-				Text(
-					text = SimpleDateFormat("h:mm ", LocalLocale.current.platformLocale).format(startTime.time),
-					style = timeStyle,
-					color = timeColor,
-					maxLines = 1,
-					softWrap = false,
-					modifier = Modifier.alignByBaseline()
-				)
-				Text(
-					text = SimpleDateFormat("a", LocalLocale.current.platformLocale).format(startTime.time),
-					style = amPmStyle,
-					color = amPmColor,
-					maxLines = 1,
-					softWrap = false,
-					modifier = Modifier.alignByBaseline()
-				)
-			}
-		}
-		Icon(
-			imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-			contentDescription = null,
-			tint = colorScheme.onBackground,
-			modifier = Modifier
-				.size(32.dp)
-				.then(
-					if (canAnimate) {
-						with(sharedTransitionScope) {
-							Modifier.sharedElement(
-								sharedContentState = rememberSharedContentState(key = "arrow_${alarmId}"),
-								animatedVisibilityScope = animatedVisibilityScope,
-								boundsTransform = boundsTransform
-							)
-						}
-					} else Modifier
-				)
-		)
-		Row(
-			verticalAlignment = Alignment.Bottom,
-			modifier = Modifier
-				.weight(1f)
-				.clickable { showEndTimePicker = !showEndTimePicker },
-			horizontalArrangement = Arrangement.End
-		) {
-			Row(
-				verticalAlignment = Alignment.Bottom,
-				modifier = Modifier.then(
-					if (canAnimate) {
-						with(sharedTransitionScope) {
-							Modifier.sharedElement(
-								sharedContentState = rememberSharedContentState(key = "end_time_${alarmId}"),
-								animatedVisibilityScope = animatedVisibilityScope,
-								boundsTransform = boundsTransform
-							)
-						}
-					} else Modifier
-				)
-			) {
-				Text(
-					text = SimpleDateFormat("h:mm ", LocalLocale.current.platformLocale).format(endTime.time),
-					style = timeStyle,
-					color = timeColor,
-					maxLines = 1,
-					softWrap = false,
-					modifier = Modifier.alignByBaseline()
-				)
-				Text(
-					text = SimpleDateFormat("a", LocalLocale.current.platformLocale).format(endTime.time),
-					style = amPmStyle,
-					color = amPmColor,
-					maxLines = 1,
-					softWrap = false,
-					modifier = Modifier.alignByBaseline()
-				)
-			}
+			Text(
+				text = SimpleDateFormat("h:mm ", LocalLocale.current.platformLocale).format(alarmTime.time),
+				style = timeStyle,
+				color = timeColor,
+				maxLines = 1,
+				softWrap = false,
+				modifier = Modifier.alignByBaseline()
+			)
+			Text(
+				text = SimpleDateFormat("a", LocalLocale.current.platformLocale).format(alarmTime.time),
+				style = amPmStyle,
+				color = amPmColor,
+				maxLines = 1,
+				softWrap = false,
+				modifier = Modifier.alignByBaseline()
+			)
 		}
 	}
 

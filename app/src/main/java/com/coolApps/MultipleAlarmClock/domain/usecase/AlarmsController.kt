@@ -109,15 +109,15 @@ class AlarmsController @Inject constructor(
 		return ResultCustom.runCatching(
 			{ exception -> AlarmControllerErrorSet.Unknown(internalErrorMessage = exception.toString()) }
 		) {
-			val insertedAlarm = alarm.copy(isReadyToUse = true)
-			insertedAlarm.validate().let {
+			val rolledAlarm = alarm.copy(isReadyToUse = true).rollOverIfTimeIntervalPassed(now)
+			rolledAlarm.validate().let {
 				if (it != AlarmDataValidationResult.Success) return ResultCustom.Failure(errorClass = AlarmControllerErrorSet.ValidationFailed(internalErrorMessage = "AlarmData validation failed, and res:$it"))
 			}
-			val upsertResult = alarmRepository.upsertAlarm(insertedAlarm)
+			val upsertResult = alarmRepository.upsertAlarm(rolledAlarm)
 			val insertedAlarmData: AlarmData =	if (upsertResult == -1L){
-				alarm.copy(isReadyToUse = true) // updated the alarm
+				rolledAlarm // updated the alarm
 			}else {
-				alarm.copy(id = upsertResult.toInt(), isReadyToUse = true )
+				rolledAlarm.copy(id = upsertResult.toInt())
 			}
 			insertedAlarmData.validate().let {
 				if (it != AlarmDataValidationResult.Success) return ResultCustom.Failure(errorClass = AlarmControllerErrorSet.ValidationFailed(internalErrorMessage = "AlarmData validation failed, and res:$it"))
@@ -212,16 +212,10 @@ class AlarmsController @Inject constructor(
 		return ResultCustom.runCatching(
 			{ exception ->AlarmControllerErrorSet.Unknown(internalErrorMessage = exception.toString()) }
 		){
-			val currentTime = Calendar.getInstance().timeInMillis
-			alarmData.alarmTimeSequence()
-				.dropWhile { it < currentTime }
-				.take(5)
-				.forEach { alarmIterVal ->
-					logD("the time value gotten in iterating is ${getTimeInHumanReadableFormatProtectFrom0Included(alarmIterVal)}")
-					val intent = intentAsAlarmActionData(alarmData = alarmData, receiverClass = alarmReceiverClass, alarmTriggerTime = alarmIterVal )
-					cancelPendingIntentReceiver(intent, context,  alarmManager, alarmData.id)
-					cancelPendingIntentReceiver(intent, context,   alarmManager, alarmIterVal.toInt())
-				}
+			logD("the time value gotten is ${getTimeInHumanReadableFormatProtectFrom0Included(alarmData.alarmTime)}")
+			val intent = intentAsAlarmActionData(alarmData = alarmData, receiverClass = alarmReceiverClass, alarmTriggerTime = alarmData.alarmTime)
+			cancelPendingIntentReceiver(intent, context,  alarmManager, alarmData.id)
+			cancelPendingIntentReceiver(intent, context,   alarmManager, alarmData.alarmTime.toInt())
 			logD("the alarmData is $alarmData")
 		}
 	}
@@ -255,88 +249,55 @@ class AlarmsController @Inject constructor(
 			// ERROR: this shouldn't be true
 			return
 		}
-		val currentTimeAlarmFired = alarmIntent.alarmTriggerTime
-		val nextAlarmTime = currentTimeAlarmFired + alarmData.getFreqInMillisecond()
-		logD("Current: ${getTimeInHumanReadableFormatProtectFrom0Included(currentTimeAlarmFired)}, Next: ${
-			getTimeInHumanReadableFormatProtectFrom0Included(nextAlarmTime)
-		}")
+		logD("Fired at: ${getTimeInHumanReadableFormatProtectFrom0Included(alarmIntent.alarmTriggerTime)}")
 
-		if (nextAlarmTime <= alarmData.endTime) {
-			// put this logic in alarmController (end time calc too)
-			val res = scheduleAlarm(
-				alarmManager = alarmManager,
-				componentActivity = context,
-				receiverClass = AlarmReceiver::class.java,
-				alarmData = alarmData,
-				alarmTriggerTime = nextAlarmTime
-			)
-
-			res.fold(
-				onSuccess = { logD("Scheduled next alarm successfully") },
-				onError = { error ->
-					logD("Error scheduling next alarm: ${error.internalErrorMessage}")
-					errorHandler.handleError(ResultCustom.Failure(error))
-					if (error is AlarmControllerErrorSet.ValidationFailed) {
-						alarmRepository.updateAlarm(alarmData.copy(isReadyToUse = false))
-					}
+		if (alarmData.repeatDays == null) {
+			logD("Alarm has no repeat days. Marking as not ready.")
+			this.updateAlarmStateInDb(alarmData.copy(isReadyToUse = false)).fold(
+				onSuccess = { logD("Alarm done") },
+				onError = { failureRes ->
+					logD("DB update failed for finished alarm: $failureRes")
+					errorHandler.handleError(ResultCustom.Failure(failureRes))
 				}
 			)
-		} else {
-			logD("Alarm series finished today. Advancing to next valid day for repeatDays: ${alarmData.repeatDays}")
-
-			when{
-				alarmData.repeatDays != null ->{
-					val pastToday = Calendar.getInstance().apply { timeInMillis = alarmData.endTime + 1 }
-					val newAlarm = alarmData.rollOverIfTimeIntervalPassed(pastToday).copy(isReadyToUse = true)
-
-					val validationRes = newAlarm.validate()
-					if (validationRes != AlarmDataValidationResult.Success) {
-						logD("New alarm for next repeat day failed validation: $validationRes")
-						errorHandler.handleError(ResultCustom.Failure(AlarmControllerErrorSet.ValidationFailed(internalErrorMessage = validationRes.errorMessage())))
-						this.updateAlarmStateInDb(alarmData.copy(isReadyToUse = false))
-						return
-					}
-
-					this.updateAlarmStateInDb(newAlarm).fold(
-						onSuccess = {},
-						onError = { failureRes ->
-							logD("DB update failed for next repeat day alarm: $failureRes")
-							errorHandler.handleError(ResultCustom.Failure(failureRes))
-							return
-						}
-					)
-					scheduleAlarm(
-						alarmManager = alarmManager,
-						componentActivity = context,
-						receiverClass = alarmReceiverClass,
-						alarmData = newAlarm,
-						alarmTriggerTime = newAlarm.startTime // fresh window: first trigger is always startTime
-					).fold(
-						onSuccess = { logD("Scheduled next repeat-day alarm successfully") },
-						onError = { failureRes ->
-							logD("Error scheduling next repeat-day alarm: ${failureRes.internalErrorMessage}")
-							errorHandler.handleError(ResultCustom.Failure(failureRes))
-							this.updateAlarmStateInDb(newAlarm.copy(isReadyToUse = false))
-							cancelAlarm(newAlarm, context, alarmManager)
-						}
-					)
-
-				} else ->{
-					// alarm over
-					this.updateAlarmStateInDb(alarmData.copy(isReadyToUse = false)).fold(
-					onSuccess = {},
-					onError = { failureRes ->
-						logD("DB update failed for next repeat day alarm: $failureRes")
-						errorHandler.handleError(ResultCustom.Failure(failureRes))
-						return
-					}
-				)
-
-				}
-			}
-
-			// force the rollover to treat "today" as done, regardless of real-world clock jitter
+			return
 		}
+		logD("Advancing to next valid day for repeatDays: ${alarmData.repeatDays}")
+
+		val afterFired = Calendar.getInstance().apply { timeInMillis = alarmIntent.alarmTriggerTime + 1 }
+		val newAlarm = alarmData.rollOverIfTimeIntervalPassed(afterFired).copy(isReadyToUse = true)
+
+		val validationRes = newAlarm.validate()
+		if (validationRes != AlarmDataValidationResult.Success) {
+			logD("New alarm for next repeat day failed validation: $validationRes")
+			errorHandler.handleError(ResultCustom.Failure(AlarmControllerErrorSet.ValidationFailed(internalErrorMessage = validationRes.errorMessage())))
+			this.updateAlarmStateInDb(alarmData.copy(isReadyToUse = false))
+			return
+		}
+
+		this.updateAlarmStateInDb(newAlarm).fold(
+			onSuccess = {},
+			onError = { failureRes ->
+				logD("DB update failed for next repeat day alarm: $failureRes")
+				errorHandler.handleError(ResultCustom.Failure(failureRes))
+				return
+			}
+		)
+		scheduleAlarm(
+			alarmManager = alarmManager,
+			componentActivity = context,
+			receiverClass = alarmReceiverClass,
+			alarmData = newAlarm,
+			alarmTriggerTime = newAlarm.alarmTime
+		).fold(
+			onSuccess = { logD("Scheduled next repeat-day alarm successfully") },
+			onError = { failureRes ->
+				logD("Error scheduling next repeat-day alarm: ${failureRes.internalErrorMessage}")
+				errorHandler.handleError(ResultCustom.Failure(failureRes))
+				this.updateAlarmStateInDb(newAlarm.copy(isReadyToUse = false))
+				cancelAlarm(newAlarm, context, alarmManager)
+			}
+		)
 	}
 
 	suspend fun resetAlarmsHandler(
@@ -382,8 +343,8 @@ class AlarmsController @Inject constructor(
 	private fun intentAsAlarmActionData( action:String = ALARM_ACTION, alarmData: AlarmData, alarmTriggerTime: Long, receiverClass:Class<out BroadcastReceiver>): Intent{
 		val intent = Intent(ALARM_ACTION)
 		val intentData = AlarmActivityIntentData(
-			startTimeForDb = alarmData.startTime, alarmTriggerTime = alarmTriggerTime, endTime = alarmData.endTime,
-			message = alarmData.message, alarmIdInDb = alarmData.id, ringDurationInMin = alarmData.ringDurationInMin
+			alarmIdInDb = alarmData.id, alarmTime = alarmData.alarmTime, alarmTriggerTime = alarmTriggerTime,
+			message = alarmData.message, ringDurationInMin = alarmData.ringDurationInMin
 		)
 		intent.setClass(context, receiverClass)
 		intent.putExtra("intentData", intentData)

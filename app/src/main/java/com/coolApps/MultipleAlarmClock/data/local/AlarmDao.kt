@@ -14,8 +14,8 @@ interface AlarmDao {
 	@Insert
 	suspend fun insert(alarmData: AlarmData): Long
 
-	@Query("DELETE FROM AlarmData WHERE startTime= :firstValue AND endTime = :secondValue")
-	suspend fun deleteAlarm(firstValue: Long, secondValue: Long): Int
+	@Query("DELETE FROM AlarmData WHERE alarmTime = :value")
+	suspend fun deleteAlarm(value: Long): Int
 
 	@Query("DELETE FROM AlarmData WHERE id = :id")
 	suspend fun deleteAlarm(id: Int): Int
@@ -29,21 +29,18 @@ interface AlarmDao {
 	@Query("SELECT * FROM AlarmData")
 	suspend fun getAllAlarms(): List<AlarmData>
 
-	//    @Query("SELECT * FROM AlarmData ORDER BY date_in_long ASC, first_value ASC")
-	@Query("SELECT * FROM AlarmData ORDER BY startTime ASC, endTime ASC")
+	@Query("SELECT * FROM AlarmData ORDER BY alarmTime ASC")
 	fun getAllAlarmsFlow(): Flow<List<AlarmData>>
 
-	// New function to retrieve an alarm by first_value and second_value
-	@Query("SELECT * FROM AlarmData WHERE startTime = :firstValue AND endTime = :secondValue LIMIT 1")
-	suspend fun getAlarmByValues(firstValue: Long, secondValue: Long): AlarmData?
+	@Query("SELECT * FROM AlarmData WHERE alarmTime = :value LIMIT 1")
+	suspend fun getAlarmByValues(value: Long): AlarmData?
 
 	/**-1L when update occurs and rest is the row ID*/
 	@Upsert
 	suspend fun updateOrInsert(alarmData: AlarmData): Long
 
-	// New function to update the is_ready_to_use field of an alarm
-	@Query("UPDATE AlarmData SET is_ready_to_use = :isReadyToUse WHERE startTime = :startTime AND endTime = :endTime")
-	suspend fun updateReadyToUseInAlarm(startTime: Long, endTime: Long, isReadyToUse: Boolean)
+	@Query("UPDATE AlarmData SET is_ready_to_use = :isReadyToUse WHERE alarmTime = :alarmTime")
+	suspend fun updateReadyToUseInAlarm(alarmTime: Long, isReadyToUse: Boolean)
 
 	@Update
 	suspend fun updateAlarm(alarmData: AlarmData): Int  // Returns number of rows updated
@@ -51,8 +48,8 @@ interface AlarmDao {
 	@Query("SELECT * FROM AlarmData WHERE id = :id")
 	suspend fun getAlarmById(id: Int): AlarmData?
 
-	@Query(" UPDATE AlarmData SET is_ready_to_use = :isReadyToUse , startTime = :firstValue, endTime = :second_value  WHERE id = :id")
-	suspend fun updateAlarmForReset(id: Int, firstValue: Long, second_value: Long, isReadyToUse: Boolean)
+	@Query(" UPDATE AlarmData SET is_ready_to_use = :isReadyToUse , alarmTime = :value WHERE id = :id")
+	suspend fun updateAlarmForReset(id: Int, value: Long, isReadyToUse: Boolean)
 
 	@Update
 	suspend fun updateAlarmForReset(alarmData: AlarmData): Int
@@ -64,17 +61,17 @@ interface AlarmDao {
         SELECT *
         FROM AlarmData
         WHERE is_ready_to_use = 1
-          AND endTime > :now
-        ORDER BY endTime ASC
+          AND alarmTime > :now
+        ORDER BY alarmTime ASC
         LIMIT 1
     """)
 	suspend fun getNextUpcomingAlarm(now: Long): AlarmData?
 
 	@Query("""
-        SELECT MAX(endTime)
+        SELECT MAX(alarmTime)
         FROM AlarmData
         WHERE is_ready_to_use = 0
-          AND endTime <= :now
+          AND alarmTime <= :now
     """)
 	suspend fun getLastCompletedAlarmTime(now: Long): Long?
 }

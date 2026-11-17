@@ -8,13 +8,12 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class AlarmActivityIntentData(
 		val alarmIdInDb: Int,
-		val startTimeForDb: Long,
+		val alarmTime: Long,
 		val alarmTriggerTime: Long,
-		val endTime: Long,
 		val message: String,
 		val ringDurationInMin: Long = 2,
 ) : Parcelable {
     override fun toString(): String {
-        return "AlarmActivityIntentData: alarmIdInDb=$alarmIdInDb, startTimeForDb=$startTimeForDb, alarmTriggerTime=$alarmTriggerTime, endTime=$endTime, message:$message, ringDurationInMin:$ringDurationInMin"
+        return "AlarmActivityIntentData: alarmIdInDb=$alarmIdInDb, alarmTime=$alarmTime, alarmTriggerTime=$alarmTriggerTime, message:$message, ringDurationInMin:$ringDurationInMin"
     }
 }

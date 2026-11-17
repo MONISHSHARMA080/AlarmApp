@@ -37,7 +37,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material3.CircularProgressIndicator
@@ -127,7 +126,7 @@ private fun AlarmResult(
 
 	LaunchedEffect(alarmData) {
 		notificationTimes = withContext(Dispatchers.Default) {
-			computeNotificationTimes(alarmData)
+			listOf(alarmData.alarmTime)
 		}
 	}
 
@@ -233,9 +232,7 @@ private fun AlarmResult(
 				) {
 					Column {
 						AlarmCard(
-							startTime = alarmData.startTime,
-							endTime = alarmData.endTime,
-							frequencyInMin = alarmData.frequencyInMin,
+							alarmTime = alarmData.alarmTime,
 							formatter = timeFormatter,
 							zoneId = zoneId
 						)
@@ -400,9 +397,7 @@ private fun AnimatedSuccessIcon(
 
 @Composable
 private fun AlarmCard(
-	startTime: Long,
-	endTime: Long,
-	frequencyInMin: Long,
+	alarmTime: Long,
 	formatter: DateTimeFormatter,
 	zoneId: ZoneId
 ) {
@@ -441,30 +436,12 @@ private fun AlarmCard(
 				Column {
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Text(
-							text = formatEpochMillis(startTime, formatter, zoneId),
-							style = typography.titleMedium,
-							fontWeight = FontWeight.Normal,
-							color = colorScheme.onSurface
-						)
-						Icon(
-							imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-							contentDescription = null,
-							modifier = Modifier.padding(horizontal = 10.dp).size(18.dp),
-							tint = colorScheme.onSurface.copy(alpha = 0.6f)
-						)
-						Text(
-							text = formatEpochMillis(endTime, formatter, zoneId),
+							text = formatEpochMillis(alarmTime, formatter, zoneId),
 							style = typography.titleMedium,
 							fontWeight = FontWeight.Normal,
 							color = colorScheme.onSurface
 						)
 					}
-					Spacer(modifier = Modifier.height(2.dp))
-					Text(
-						text = stringResource(R.string.onboarding_result_every_min, frequencyInMin),
-						style = typography.bodySmall,
-						color = colorScheme.onSurface.copy(alpha = 0.62f)
-					)
 				}
 			}
 		}
@@ -579,19 +556,6 @@ private fun ExpandableMoreRow(
 			modifier = Modifier.size(18.dp).graphicsLayer { rotationZ = chevronRotation }
 		)
 	}
-}
-
-private fun computeNotificationTimes(alarmData: AlarmData): List<Long> {
-	val intervalMillis = alarmData.frequencyInMin.coerceAtLeast(1) * 60_000L
-	if (alarmData.endTime <= alarmData.startTime) return listOf(alarmData.startTime)
-
-	val times = mutableListOf<Long>()
-	var current = alarmData.startTime
-	while (current <= alarmData.endTime) {
-		times.add(current)
-		current += intervalMillis
-	}
-	return times
 }
 
 private fun formatEpochMillis(millis: Long, formatter: DateTimeFormatter, zoneId: ZoneId): String {

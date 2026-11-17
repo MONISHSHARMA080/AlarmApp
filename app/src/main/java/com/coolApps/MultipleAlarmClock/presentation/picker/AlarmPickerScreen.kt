@@ -37,11 +37,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -75,6 +77,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.coolApps.MultipleAlarmClock.R
 import com.coolApps.MultipleAlarmClock.data.local.AlarmData
@@ -212,7 +215,6 @@ fun EditAlarmScreen(
 					PrimaryActionButton(
 						currentProgress = Progress.FullEditor,
 						uiState = uiState,
-						isCandidateInvalid = false,
 						onAction = {
 							if (canSetAlarm) {
 								viewModel.onSetAlarmClicked()
@@ -245,7 +247,7 @@ fun EditAlarmScreen(
 
 /**
  * New-alarm route entry point.
- * Owns the Scaffold with StartTime → EndTime → FullEditor stepper.
+ * Owns the Scaffold with StartTime → FullEditor stepper.
  * No sharedBounds on the scaffold. AnimatedContent stepper is kept as-is.
  */
 @OptIn(
@@ -322,27 +324,13 @@ fun NewAlarmScreen(
 	val horizontalPadding = rememberAdaptiveHorizontalPadding()
 	val currentProgress = if (fromOnboarding) uiState.progress else Progress.FullEditor
 
-	val startTimePickerState = key(currentProgress, uiState.alarmData.startTime) {
+	val alarmTimePickerState = key(currentProgress, uiState.alarmData.alarmTime) {
 		rememberTimePickerState(
-			initialHour = uiState.alarmData.startTimeCalendar.get(Calendar.HOUR_OF_DAY),
-			initialMinute = uiState.alarmData.startTimeCalendar.get(Calendar.MINUTE),
+			initialHour = uiState.alarmData.alarmTimeCalendar.get(Calendar.HOUR_OF_DAY),
+			initialMinute = uiState.alarmData.alarmTimeCalendar.get(Calendar.MINUTE),
 			is24Hour = false
 		)
 	}
-	val endTimePickerState = key(currentProgress) {
-		rememberTimePickerState(
-			initialHour = uiState.alarmData.endTimeCalendar.get(Calendar.HOUR_OF_DAY),
-			initialMinute = uiState.alarmData.endTimeCalendar.get(Calendar.MINUTE),
-			is24Hour = false
-		)
-	}
-	val candidateEnd = remember(endTimePickerState.hour, endTimePickerState.minute, uiState.alarmData.startTime) {
-		(uiState.alarmData.endTimeCalendar.clone() as Calendar).apply {
-			set(Calendar.HOUR_OF_DAY, endTimePickerState.hour)
-			set(Calendar.MINUTE, endTimePickerState.minute)
-		}
-	}
-	val isCandidateInvalid = currentProgress != Progress.StartTime && candidateEnd.timeInMillis <= uiState.alarmData.startTime
 
 	Scaffold(
 		contentWindowInsets = WindowInsets.safeDrawing,
@@ -375,18 +363,12 @@ fun NewAlarmScreen(
 						onClick = {
 							when (currentProgress) {
 								Progress.StartTime -> settingAlarmCancelled()
-								Progress.EndTime -> {
-									if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-										view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
-									}
-									viewModel.updateProgress(Progress.StartTime)
-								}
 								Progress.FullEditor -> {
 									if (fromOnboarding) {
 										if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 											view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
 										}
-										viewModel.updateProgress(Progress.EndTime)
+										viewModel.updateProgress(Progress.StartTime)
 									} else {
 										settingAlarmCancelled()
 									}
@@ -398,25 +380,17 @@ fun NewAlarmScreen(
 					PrimaryActionButton(
 						currentProgress = currentProgress,
 						uiState = uiState,
-						isCandidateInvalid = isCandidateInvalid,
 						onAction = {
 							if (fromOnboarding) {
 								when (currentProgress) {
 									Progress.StartTime -> {
-										val selectedStartTime = (uiState.alarmData.startTimeCalendar.clone() as Calendar).apply {
-											set(Calendar.HOUR_OF_DAY, startTimePickerState.hour)
-											set(Calendar.MINUTE, startTimePickerState.minute)
+										val selectedAlarmTime = (uiState.alarmData.alarmTimeCalendar.clone() as Calendar).apply {
+											set(Calendar.HOUR_OF_DAY, alarmTimePickerState.hour)
+											set(Calendar.MINUTE, alarmTimePickerState.minute)
 										}
 										view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-										viewModel.updateStartTime(selectedStartTime)
-										viewModel.updateProgress(Progress.EndTime)
-									}
-									Progress.EndTime -> {
-										if (!isCandidateInvalid) {
-											view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-											viewModel.updateEndTime(candidateEnd)
-											viewModel.updateProgress(Progress.FullEditor)
-										}
+										viewModel.updateStartTime(selectedAlarmTime)
+										viewModel.updateProgress(Progress.FullEditor)
 									}
 									Progress.FullEditor -> {
 										val isInactiveEdit = uiState.initialAlarm?.isReadyToUse == false
@@ -477,20 +451,9 @@ fun NewAlarmScreen(
 				when (progress) {
 					Progress.StartTime -> {
 						TimePickerWithoutDialog(
-							state = startTimePickerState,
+							state = alarmTimePickerState,
 							modifier = Modifier.padding(horizontal = horizontalPadding),
 							uiState = uiState,
-							onDisabledTimeSelected = { onDisabledTimeSelected(view) }
-						)
-					}
-					Progress.EndTime -> {
-						TimePickerWithoutDialog(
-							state = endTimePickerState,
-							isCandidateInvalid = isCandidateInvalid,
-							modifier = Modifier.padding(horizontal = horizontalPadding),
-							uiState = uiState,
-							minHour = startTimePickerState.hour,
-							minMin = if (startTimePickerState.minute == 59) 59 else startTimePickerState.minute + 1,
 							onDisabledTimeSelected = { onDisabledTimeSelected(view) }
 						)
 					}
@@ -601,6 +564,7 @@ private fun AlarmEditorBody(
 		animateScroll: Boolean
 ) {
 	val view = LocalView.current
+	var showTimePicker by remember { mutableStateOf(false) }
 
 	Box(
 		modifier = modifier,
@@ -609,24 +573,67 @@ private fun AlarmEditorBody(
 		Column(
 			modifier = Modifier
 				.widthIn(max = 600.dp)
-				.fillMaxSize(),
+				.fillMaxSize()
+				.padding(horizontal = 2.dp),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
-			Spacer(modifier = Modifier.weight(0.44f))
+			Spacer(modifier = Modifier.weight(0.38f))
 			TimeRow(
 				uiState = uiState,
 				onStartTimeChange = { viewModel.updateStartTime(it) },
-				onEndTimeChange = { viewModel.updateEndTime(it) },
 				onDisabledTimeSelected = { onDisabledTimeSelected(view) },
 				sharedTransitionScope = sharedTransitionScope,
 				animatedVisibilityScope = animatedVisibilityScope,
 				alarmId = alarmId,
-				boundsTransform = AlarmTimeBoundsTransform
+				boundsTransform = AlarmTimeBoundsTransform,
+				showStartTimePicker = showTimePicker,
+				onShowStartTimePickerChange = { showTimePicker = it }
 			)
-			Spacer(modifier = Modifier.weight(0.45f))
+			Spacer(modifier = Modifier.weight(0.12f))
+			// Edit button outside / above the settings card – same action as clicking the time
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(horizontal = 8.dp, vertical = 4.dp),
+				horizontalArrangement = Arrangement.End,
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				val editInteractionSource = remember { MutableInteractionSource() }
+				val isEditPressed by editInteractionSource.collectIsPressedAsState()
+				val editCorner by animateDpAsState(
+					targetValue = if (isEditPressed) 14.dp else 28.dp,
+					animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+					label = "edit_corner_editor"
+				)
+				val editScale by animateFloatAsState(
+					targetValue = if (isEditPressed) 0.92f else 1f,
+					animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+					label = "edit_scale_editor"
+				)
+				FilledTonalIconButton(
+					onClick = {
+						view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+						showTimePicker = true
+					},
+					interactionSource = editInteractionSource,
+					shape = RoundedCornerShape(editCorner),
+					modifier = Modifier
+						.size(48.dp)
+						.graphicsLayer {
+							scaleX = editScale
+							scaleY = editScale
+						}
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Edit,
+						contentDescription = stringResource(R.string.alarm_picker_edit_time_desc),
+						modifier = Modifier.size(20.dp)
+					)
+				}
+			}
+			Spacer(modifier = Modifier.height(4.dp))
 			SettingsCard(
 				uiState = uiState,
-				updateFrequency = { viewModel.updateFrequency(it) },
 				updateRingDuration = { viewModel.updateRingDuration(it) },
 				messageValueChanged = { viewModel.updateMessage(it) },
 				updateIsForceLoudVolume = { viewModel.updateIsForceLoudVolume(it) },
@@ -722,7 +729,6 @@ fun CancelAndDeleteButton(
           Text(
 			  text = when (progress) {
 				Progress.StartTime -> stringResource(R.string.alarm_picker_cancel)
-				Progress.EndTime -> stringResource(R.string.alarm_picker_previous)
 				Progress.FullEditor -> if (isNewAlarm && !fromOnboarding) {
 					stringResource(R.string.alarm_picker_cancel)
 				} else {
@@ -742,7 +748,6 @@ fun CancelAndDeleteButton(
 fun PrimaryActionButton(
         currentProgress: Progress,
         uiState: AlarmPickerUiState,
-        isCandidateInvalid: Boolean,
         onAction: () -> Unit,
         modifier: Modifier = Modifier
 ) {
@@ -770,22 +775,14 @@ fun PrimaryActionButton(
     )
 
     when (progress) {
-      Progress.StartTime, Progress.EndTime -> {
+      Progress.StartTime -> {
         Button(
                 onClick = onAction,
-                enabled = !isCandidateInvalid,
                 interactionSource = interactionSource,
-                colors = if (!isCandidateInvalid) {
-                  ButtonDefaults.buttonColors(
-                          containerColor = colorScheme.primary,
-                          contentColor = colorScheme.onPrimary
-                  )
-                } else {
-                  ButtonDefaults.buttonColors(
-                          containerColor = colorScheme.surfaceVariant,
-                          contentColor = colorScheme.onSurfaceVariant
-                  )
-                },
+                colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                ),
                 modifier = modifier
                         .height(56.dp)
                         .graphicsLayer {

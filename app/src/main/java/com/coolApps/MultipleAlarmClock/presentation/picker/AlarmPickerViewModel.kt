@@ -187,14 +187,11 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			val transformed = transform(state.alarmData)
 			val corrected = transformed.rollOverIfTimeIntervalPassed()
 
-			val newStartTime = Calendar.getInstance().apply {
-				timeInMillis = corrected.startTime
-			}.truncatedToMinute().timeInMillis
-			val newEndTime = Calendar.getInstance().apply {
-				timeInMillis = corrected.endTime
+			val newAlarmTime = Calendar.getInstance().apply {
+				timeInMillis = corrected.alarmTime
 			}.truncatedToMinute().timeInMillis
 
-			val finalAlarm = corrected.copy(startTime = newStartTime, endTime = newEndTime)
+			val finalAlarm = corrected.copy(alarmTime = newAlarmTime)
 			state.copy(
 				alarmData = finalAlarm,
 				validationResult = finalAlarm.validate()
@@ -204,15 +201,7 @@ class AlarmPickerViewModel @AssistedInject constructor(
 
 	fun updateStartTime(newStartTime: Calendar) {
 		updateAlarmData {
-			it.copy(startTime = newStartTime.apply {
-			}.truncatedToMinute().timeInMillis)
-		}
-		captureUiStateAndSendAnalytics(_uiState.value)
-	}
-
-	fun updateEndTime(newEndTime: Calendar) {
-		updateAlarmData {
-			it.copy(endTime = newEndTime.apply {
+			it.copy(alarmTime = newStartTime.apply {
 			}.truncatedToMinute().timeInMillis)
 		}
 		captureUiStateAndSendAnalytics(_uiState.value)
@@ -243,64 +232,22 @@ class AlarmPickerViewModel @AssistedInject constructor(
 
 	/** creates a default alarm data; either selects a time if [alarm] is null or else returns [alarm]*/
 	private fun createDefaultAlarm(alarm: AlarmData?): AlarmData {
-		val selectedStartTime: Long
-		val selectedEndTime: Long
 		logD("alarm is $alarm")
-		when(alarm){
+		return when(alarm){
 			null ->{
-				val now = Calendar.getInstance()
-
-				val startTime = (now.clone() as Calendar).apply  {
+				val alarmTime = Calendar.getInstance().apply {
 					add(Calendar.MINUTE, 1)
-				}.truncatedToMinute()
+				}.truncatedToMinute().timeInMillis
+				logD(" alarmTime:${alarmsController.getTimeInHumanReadableFormatProtectFrom0Included(alarmTime)} ")
 
-				val endOfDay = (now.clone() as Calendar).apply {
-					set(Calendar.HOUR_OF_DAY, 23)
-					set(Calendar.MINUTE, 59)
-				}.truncatedToMinute()
-
-				val durationMin = 45
-				when{
-					startTime.after(endOfDay) -> {
-						val start = (now.clone() as Calendar).apply {
-							add(Calendar.DAY_OF_YEAR, 1)
-							set(Calendar.HOUR_OF_DAY, 0)
-							set(Calendar.MINUTE, 0)
-							set(Calendar.SECOND, 0)
-							set(Calendar.MILLISECOND, 0)
-						}
-						val end = (start.clone() as Calendar).apply {
-							add(Calendar.MINUTE, durationMin)
-							set(Calendar.SECOND, 0)
-							set(Calendar.MILLISECOND, 0)
-						}
-						selectedStartTime = start.timeInMillis
-						selectedEndTime = end.timeInMillis
-					}
-					else ->{
-						selectedStartTime = startTime.timeInMillis
-						val requestedEnd = (startTime.clone() as Calendar).apply {
-							add(Calendar.MINUTE, durationMin)
-							set(Calendar.SECOND, 0)
-							set(Calendar.MILLISECOND, 0)
-						}
-						selectedEndTime = if (requestedEnd.after(endOfDay)) endOfDay.timeInMillis else requestedEnd.timeInMillis
-					}
-				}
-				logD(" selectedStartTime:${alarmsController.getTimeInHumanReadableFormatProtectFrom0Included(selectedStartTime)}, selectedEndTime:${alarmsController.getTimeInHumanReadableFormatProtectFrom0Included(selectedEndTime)}, endOfDay:${alarmsController.getTimeInHumanReadableFormatProtectFrom0Included(endOfDay.timeInMillis)} ")
-
-				return AlarmData(
-					startTime = selectedStartTime,
-					endTime = selectedEndTime,
+				AlarmData(
+					alarmTime = alarmTime,
 					message = "",
-					frequencyInMin = 5,
 					sound = null,
 					isReadyToUse = true
 				)
 			}
-			else -> {
-				return alarm
-			}
+			else -> alarm
 		}
 	}
 
@@ -338,18 +285,12 @@ class AlarmPickerViewModel @AssistedInject constructor(
 	fun updateDate(calVersion: Calendar) {
 		val currentAlarm = _uiState.value.alarmData
 
-		val newStartDate = Calendar.getInstance().apply {
-			timeInMillis = currentAlarm.startTime
-		}.withDate(calVersion)
-
-
-		val newEndDate = Calendar.getInstance().apply {
-			timeInMillis = currentAlarm.endTime
+		val newAlarmDate = Calendar.getInstance().apply {
+			timeInMillis = currentAlarm.alarmTime
 		}.withDate(calVersion)
 
 		val updated = currentAlarm.copy(
-			startTime = newStartDate.timeInMillis,
-			endTime = newEndDate.timeInMillis,
+			alarmTime = newAlarmDate.timeInMillis,
 			repeatDays = null
 		).rollOverIfTimeIntervalPassed()
 
@@ -360,16 +301,6 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			)
 		}
 		captureUiStateAndSendAnalytics(_uiState.value)
-	}
-
-	fun updateFrequency(newFreq: Long) {
-		_uiState.update { state ->
-			val updated = state.alarmData.copy(frequencyInMin = newFreq).rollOverIfTimeIntervalPassed()
-			state.copy(
-				alarmData = updated,
-				validationResult = updated.validate()
-			)
-		}
 	}
 
 	fun updateRingDuration(newDuration: Long) {
@@ -476,32 +407,28 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			val newSet = if (day in currentSet) currentSet - day else currentSet + day
 			val newRepeatDays = RepeatDays.of(newSet)
 
-			val durationMillis = current.endTime - current.startTime
-
 			val rebasedAlarm = if (newRepeatDays == null) {
 				val today = LocalDate.now()
-				val newStart = Calendar.getInstance().apply {
-					timeInMillis = current.startTime
+				val newTime = Calendar.getInstance().apply {
+					timeInMillis = current.alarmTime
 					set(Calendar.YEAR, today.year)
 					set(Calendar.MONTH, today.monthValue - 1)
 					set(Calendar.DAY_OF_MONTH, today.dayOfMonth)
 				}.truncatedToMinute()
 				current.copy(
-					startTime = newStart.timeInMillis,
-					endTime = newStart.timeInMillis + durationMillis,
+					alarmTime = newTime.timeInMillis,
 					repeatDays = null
 				)
 			} else {
 				val nextDate = newRepeatDays.nextRepeatDate(LocalDate.now()) ?: LocalDate.now()
-				val newStart = Calendar.getInstance().apply {
-					timeInMillis = current.startTime
+				val newTime = Calendar.getInstance().apply {
+					timeInMillis = current.alarmTime
 					set(Calendar.YEAR, nextDate.year)
 					set(Calendar.MONTH, nextDate.monthValue - 1)
 					set(Calendar.DAY_OF_MONTH, nextDate.dayOfMonth)
 				}.truncatedToMinute()
 				current.copy(
-					startTime = newStart.timeInMillis,
-					endTime = newStart.timeInMillis + durationMillis,
+					alarmTime = newTime.timeInMillis,
 					repeatDays = newRepeatDays
 				)
 			}

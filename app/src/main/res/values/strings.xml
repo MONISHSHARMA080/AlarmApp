@@ -56,6 +56,7 @@
     <string name="alarm_picker_previous">Back</string>
     <string name="alarm_picker_select_start_time">Select start time</string>
     <string name="alarm_picker_select_end_time">Select end time</string>
+    <string name="alarm_picker_edit_time_desc">Edit time</string>
     <string name="alarm_picker_decrease_desc">Decrease</string>
     <string name="alarm_picker_increase_desc">Increase</string>
     <string name="alarm_picker_date">Date</string>

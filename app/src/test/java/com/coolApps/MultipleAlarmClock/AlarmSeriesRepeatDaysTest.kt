@@ -68,9 +68,8 @@ class AlarmSeriesRepeatDaysTest {
 	private lateinit var alarmManager: AlarmManager
 	private lateinit var shadowAlarmManager: ShadowAlarmManager
 
-	// Hardcoded variable to test for X weeks
 	private val testWeeks = 2
-	
+
 	@Before
 	fun setUp() {
 		hiltRule.inject()
@@ -104,37 +103,28 @@ class AlarmSeriesRepeatDaysTest {
 	}
 
 	private fun generateExpectedAlarms(
-		baseStartTime: Long, 
-		baseEndTime: Long, 
-		frequency: Long, 
-		repeatDays: RepeatDays, 
+		baseAlarmTime: Long,
+		repeatDays: RepeatDays,
 		weeksToTest: Int,
 		startFromNow: Long
 	): List<Long> {
 		val expectedAlarms = mutableListOf<Long>()
 		val daysToTest = weeksToTest * 7
-		val startCal = Calendar.getInstance().apply { timeInMillis = baseStartTime }
-		
+		val baseCal = Calendar.getInstance().apply { timeInMillis = baseAlarmTime }
+
 		for (i in 0 until daysToTest) {
-			val currentCal = (startCal.clone() as Calendar).apply {
+			val currentCal = (baseCal.clone() as Calendar).apply {
 				add(Calendar.DAY_OF_YEAR, i)
 			}
 			val currentLocalDate = LocalDate.of(
-				currentCal.get(Calendar.YEAR), 
-				currentCal.get(Calendar.MONTH) + 1, 
+				currentCal.get(Calendar.YEAR),
+				currentCal.get(Calendar.MONTH) + 1,
 				currentCal.get(Calendar.DAY_OF_MONTH)
 			)
-			
 			if (repeatDays.isSet(currentLocalDate.dayOfWeek)) {
-				val dayStartTime = currentCal.timeInMillis
-				val dayEndTime = dayStartTime + (baseEndTime - baseStartTime)
-				
-				var currentTick = dayStartTime
-				while (currentTick <= dayEndTime) {
-					if (currentTick > startFromNow) {
-						expectedAlarms.add(currentTick)
-					}
-					currentTick += frequency
+				val trigger = currentCal.timeInMillis
+				if (trigger > startFromNow) {
+					expectedAlarms.add(trigger)
 				}
 			}
 		}
@@ -181,25 +171,20 @@ class AlarmSeriesRepeatDaysTest {
 	@Test
 	fun `start alarm series form beginning`() = runTest {
 		val repeatDays = generateRandomRepeatDays()
-		val startCal = getNextValidStartCalendar(repeatDays, 17) // 5:00 PM
-		
-		val startTime = startCal.timeInMillis
-		val endTime = startTime + Duration.ofHours(3).toMillis() // 8:00 PM
-		val freqInMin = Random.nextLong(15, 61)
-		val frequency = Duration.ofMinutes(freqInMin).toMillis()
+		val startCal = getNextValidStartCalendar(repeatDays, 17)
+
+		val alarmTime = startCal.timeInMillis
 
 		val alarm = AlarmData(
-			startTime = startTime,
-			endTime = endTime,
+			alarmTime = alarmTime,
 			message = "test alarm repeat days",
 			isReadyToUse = false,
-			frequencyInMin = freqInMin,
 			repeatDays = repeatDays,
 			sound = null
 		)
 
-		val now = startTime - 200L
-		val expectedAlarmList = generateExpectedAlarms(startTime, endTime, frequency, repeatDays, testWeeks, now)
+		val now = alarmTime - 200L
+		val expectedAlarmList = generateExpectedAlarms(alarmTime, repeatDays, testWeeks, now)
 
 		SystemClock.setCurrentTimeMillis(now)
 		logD("test AlarmData:$alarm, expectedAlarms:${expectedAlarmList.size}")
@@ -213,40 +198,32 @@ class AlarmSeriesRepeatDaysTest {
 
 		val storedAlarm = fakeAlarmRepository.getAllAlarms().single()
 		assertThat(storedAlarm.isReadyToUse).isTrue()
-		assertThat(storedAlarm.startTime).isEqualTo(startTime)
-		assertThat(storedAlarm.endTime).isEqualTo(endTime)
-		assertThat(storedAlarm.frequencyInMin).isEqualTo(freqInMin)
+		assertThat(storedAlarm.alarmTime).isEqualTo(alarmTime)
 
 		val startDate = LocalDate.of(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH) + 1, startCal.get(Calendar.DAY_OF_MONTH))
 		verifyAlarmsWithNestedLoops(expectedAlarmList, startDate, repeatDays, testWeeks)
 	}
-	
+
 	@Test
 	fun `start alarm series form the middle`() = runTest {
 		val repeatDays = generateRandomRepeatDays()
-		val startCal = getNextValidStartCalendar(repeatDays, 5) // 5:00 AM
+		val startCal = getNextValidStartCalendar(repeatDays, 5)
 
-		val startTime = startCal.timeInMillis
-		val endTime = startTime + Duration.ofHours(3).toMillis() // 8:00 AM
-		val freqInMin = Random.nextLong(15, 61)
-		val frequency = Duration.ofMinutes(freqInMin).toMillis()
-		
+		val alarmTime = startCal.timeInMillis
+
 		val alarm = AlarmData(
-			startTime = startTime,
-			endTime = endTime,
+			alarmTime = alarmTime,
 			message = "test alarm form middle",
 			isReadyToUse = false,
-			frequencyInMin = freqInMin,
 			repeatDays = repeatDays,
 			sound = null
 		)
 
-		val initialSequence = alarm.alarmTimeSequence().toList()
-		val wakeUpAfterIndex = Random.nextInt(0, ((initialSequence.size * 0.8).toInt()))
-		val now = initialSequence[wakeUpAfterIndex] + frequency / 2
+		// now is after today's occurrence, so start should roll to the next valid day
+		val now = alarmTime + Duration.ofHours(12).toMillis()
 		val nowCalendar = Calendar.getInstance().apply { timeInMillis = now }
 
-		val expectedAlarmList = generateExpectedAlarms(startTime, endTime, frequency, repeatDays, testWeeks, now)
+		val expectedAlarmList = generateExpectedAlarms(alarmTime, repeatDays, testWeeks, now)
 		check(expectedAlarmList.isNotEmpty())
 
 		SystemClock.setCurrentTimeMillis(now)
@@ -261,9 +238,10 @@ class AlarmSeriesRepeatDaysTest {
 
 		val storedAlarm = fakeAlarmRepository.getAllAlarms().single()
 		assertThat(storedAlarm.isReadyToUse).isTrue()
-		assertThat(storedAlarm.startTime).isEqualTo(startTime)
+		assertThat(storedAlarm.alarmTime).isEqualTo(expectedAlarmList.first())
 
-		val startDate = LocalDate.of(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH) + 1, startCal.get(Calendar.DAY_OF_MONTH))
+		val firstCal = Calendar.getInstance().apply { timeInMillis = expectedAlarmList.first() }
+		val startDate = LocalDate.of(firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH))
 		verifyAlarmsWithNestedLoops(expectedAlarmList, startDate, repeatDays, testWeeks)
 	}
 
@@ -272,20 +250,17 @@ class AlarmSeriesRepeatDaysTest {
 		val repeatDays = generateRandomRepeatDays()
 		val startCal = getNextValidStartCalendar(repeatDays, 10)
 
-		val startTime = startCal.timeInMillis
-		val endTime = startTime + Duration.ofHours(8).toMillis()
-		val freqInMin = Random.nextLong(15, 61)
-		val frequency = Duration.ofMinutes(freqInMin).toMillis()
-		
+		val alarmTime = startCal.timeInMillis
+
 		val alarm = AlarmData(
-			startTime = startTime, endTime = endTime, message = "test before start",
-			isReadyToUse = false, frequencyInMin = freqInMin, repeatDays = repeatDays, sound = null
+			alarmTime = alarmTime, message = "test before start",
+			isReadyToUse = false, repeatDays = repeatDays, sound = null
 		)
 		val alarmId = fakeAlarmRepository.saveAlarm(alarm).toInt()
 		val savedAlarm = alarm.copy(id = alarmId)
 
-		val now = startTime - Duration.ofHours(1).toMillis()
-		val expectedAlarmList = generateExpectedAlarms(startTime, endTime, frequency, repeatDays, testWeeks, now)
+		val now = alarmTime - Duration.ofHours(1).toMillis()
+		val expectedAlarmList = generateExpectedAlarms(alarmTime, repeatDays, testWeeks, now)
 
 		SystemClock.setCurrentTimeMillis(now)
 		val nowCalendar = Calendar.getInstance().apply { timeInMillis = now }
@@ -302,31 +277,28 @@ class AlarmSeriesRepeatDaysTest {
 		val repeatDays = generateRandomRepeatDays()
 		val startCal = getNextValidStartCalendar(repeatDays, 10)
 
-		val startTime = startCal.timeInMillis
-		val endTime = startTime + Duration.ofHours(8).toMillis()
-		val freqInMin = Random.nextLong(15, 61)
-		val frequency = Duration.ofMinutes(freqInMin).toMillis()
-		
+		val alarmTime = startCal.timeInMillis
+
 		val alarm = AlarmData(
-			startTime = startTime, endTime = endTime, message = "test in middle",
-			isReadyToUse = false, frequencyInMin = freqInMin, repeatDays = repeatDays, sound = null
+			alarmTime = alarmTime, message = "test in middle",
+			isReadyToUse = false, repeatDays = repeatDays, sound = null
 		)
 		val alarmId = fakeAlarmRepository.saveAlarm(alarm).toInt()
 		val savedAlarm = alarm.copy(id = alarmId)
 
-		val fullSequence = savedAlarm.alarmTimeSequence().toList()
-		val middleIndex = fullSequence.size / 2
-		
-		val now = fullSequence[middleIndex] + frequency / 2 
+		// now is after the stored occurrence
+		val now = alarmTime + Duration.ofHours(12).toMillis()
 		SystemClock.setCurrentTimeMillis(now)
 		val nowCalendar = Calendar.getInstance().apply { timeInMillis = now }
-		
-		val expectedAlarmList = generateExpectedAlarms(startTime, endTime, frequency, repeatDays, testWeeks, now)
+
+		val expectedAlarmList = generateExpectedAlarms(alarmTime, repeatDays, testWeeks, now)
+		check(expectedAlarmList.isNotEmpty())
 
 		val result = controller.resetAlarmsHandler(savedAlarm, alarmManager, context, nowCalendar)
 		assertThat(result).isInstanceOf(Result.Success::class.java)
 
-		val startDate = LocalDate.of(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH) + 1, startCal.get(Calendar.DAY_OF_MONTH))
+		val firstCal = Calendar.getInstance().apply { timeInMillis = expectedAlarmList.first() }
+		val startDate = LocalDate.of(firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH))
 		verifyAlarmsWithNestedLoops(expectedAlarmList, startDate, repeatDays, testWeeks)
 	}
 
@@ -335,29 +307,87 @@ class AlarmSeriesRepeatDaysTest {
 		val repeatDays = generateRandomRepeatDays()
 		val startCal = getNextValidStartCalendar(repeatDays, 10)
 
-		val startTime = startCal.timeInMillis
-		val endTime = startTime + Duration.ofHours(8).toMillis()
-		val freqInMin = Random.nextLong(15, 61)
-		val frequency = Duration.ofMinutes(freqInMin).toMillis()
+		val alarmTime = startCal.timeInMillis
 
 		val alarm = AlarmData(
-			startTime = startTime, endTime = endTime, message = "test past end",
-			isReadyToUse = false, frequencyInMin = freqInMin, repeatDays = repeatDays, sound = null
+			alarmTime = alarmTime, message = "test past end",
+			isReadyToUse = false, repeatDays = repeatDays, sound = null
 		)
 		val alarmId = fakeAlarmRepository.saveAlarm(alarm).toInt()
 		val savedAlarm = alarm.copy(id = alarmId)
 
-		val now = endTime + Duration.ofHours(1).toMillis()
-		val expectedAlarmList = generateExpectedAlarms(startTime, endTime, frequency, repeatDays, testWeeks, now)
-		
+		// a week in the future ensures multiple occurrences are stale
+		val now = alarmTime + Duration.ofDays(7).toMillis()
+		val expectedAlarmList = generateExpectedAlarms(alarmTime, repeatDays, testWeeks, now)
+		check(expectedAlarmList.isNotEmpty())
+
 		SystemClock.setCurrentTimeMillis(now)
 		val nowCalendar = Calendar.getInstance().apply { timeInMillis = now }
 
 		val result = controller.resetAlarmsHandler(savedAlarm, alarmManager, context, nowCalendar)
 		assertThat(result).isInstanceOf(Result.Success::class.java)
 
-		val startDate = LocalDate.of(startCal.get(Calendar.YEAR), startCal.get(Calendar.MONTH) + 1, startCal.get(Calendar.DAY_OF_MONTH))
+		val firstCal = Calendar.getInstance().apply { timeInMillis = expectedAlarmList.first() }
+		val startDate = LocalDate.of(firstCal.get(Calendar.YEAR), firstCal.get(Calendar.MONTH) + 1, firstCal.get(Calendar.DAY_OF_MONTH))
 		verifyAlarmsWithNestedLoops(expectedAlarmList, startDate, repeatDays, testWeeks)
+	}
+
+	@Test
+	fun `scheduleNextAlarmInSeries skips weekend for Monday Friday alarm`() = runTest {
+		val repeatDays = RepeatDays.of(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))!!
+
+		val fridayCal = Calendar.getInstance().apply {
+			set(Calendar.HOUR_OF_DAY, 5)
+			set(Calendar.MINUTE, 0)
+			set(Calendar.SECOND, 0)
+			set(Calendar.MILLISECOND, 0)
+			while (get(Calendar.DAY_OF_WEEK) != Calendar.FRIDAY || timeInMillis < System.currentTimeMillis()) {
+				add(Calendar.DAY_OF_YEAR, 1)
+			}
+		}
+
+		val alarmTime = fridayCal.timeInMillis
+		val alarm = AlarmData(
+			alarmTime = alarmTime,
+			message = "weekday alarm",
+			isReadyToUse = false,
+			repeatDays = repeatDays,
+			sound = null
+		)
+
+		val now = alarmTime - 200L
+		SystemClock.setCurrentTimeMillis(now)
+
+		val result = controller.startAlarmSeriesHandler(
+			alarm = alarm,
+			alarmManager = alarmManager,
+			activityContext = context
+		)
+		assertThat(result).isInstanceOf(Result.Success::class.java)
+
+		val storedId = fakeAlarmRepository.getAllAlarms().single().id
+		var scheduled = shadowAlarmManager.peekNextScheduledAlarm()
+		assertThat(scheduled).isNotNull()
+		assertThat(scheduled!!.triggerAtMs).isEqualTo(alarmTime)
+
+		var delta = alarmTime - SystemClock.uptimeMillis()
+		shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(delta))
+		testDispatcher.scheduler.advanceUntilIdle()
+		shadowOf(Looper.getMainLooper()).idle()
+		testDispatcher.scheduler.advanceUntilIdle()
+
+		scheduled = shadowAlarmManager.peekNextScheduledAlarm()
+		assertThat(scheduled).isNotNull()
+		val expectedMonday = Calendar.getInstance().apply {
+			timeInMillis = alarmTime
+			add(Calendar.DAY_OF_YEAR, 3)
+		}.timeInMillis
+		assertThat(scheduled!!.triggerAtMs).isEqualTo(expectedMonday)
+
+		val updated = fakeAlarmRepository.getAlarmById(storedId)
+		assertThat(updated).isNotNull()
+		assertThat(updated!!.alarmTime).isEqualTo(expectedMonday)
+		assertThat(updated.isReadyToUse).isTrue()
 	}
 
 	private fun logD(str: String){

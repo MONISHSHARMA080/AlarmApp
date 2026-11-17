@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -280,7 +279,7 @@ fun AlarmCardContent(
 		) {
 			Text(
 				text = formatRelativeDate(
-					alarmStartMs = alarmData.startTime,
+					alarmStartMs = alarmData.alarmTime,
 					todayStartMs = todayStartMs,
 				),
 				style = typography.labelMedium,
@@ -301,38 +300,12 @@ fun AlarmCardContent(
 					modifier = Modifier.weight(1f)
 				) {
 					TimeDisplay(
-						millis = alarmData.startTime,
+						millis = alarmData.alarmTime,
 						textStyle = typography.displaySmall,
 						contentColor = contentColor,
 						isActive = isActive,
 						modifier = Modifier.sharedElement(
 							sharedContentState = rememberSharedContentState(key = "start_time_${alarmData.id}"),
-							animatedVisibilityScope = animatedVisibilityScope,
-							boundsTransform = AlarmTimeBoundsTransform
-						)
-					)
-					Icon(
-						imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-						contentDescription = null,
-						modifier = Modifier
-							.padding(6.dp)
-							.padding(horizontal = 8.dp)
-							.size(18.dp)
-							.sharedElement(
-								sharedContentState = rememberSharedContentState(key = "arrow_${alarmData.id}"),
-								animatedVisibilityScope = animatedVisibilityScope,
-								boundsTransform = AlarmTimeBoundsTransform
-							),
-						tint = secondaryContentColor
-					)
-
-					TimeDisplay(
-						millis = alarmData.endTime,
-						textStyle = typography.displaySmall,
-						contentColor = contentColor,
-						isActive = isActive,
-						modifier = Modifier.sharedElement(
-							sharedContentState = rememberSharedContentState(key = "end_time_${alarmData.id}"),
 							animatedVisibilityScope = animatedVisibilityScope,
 							boundsTransform = AlarmTimeBoundsTransform
 						)
@@ -460,15 +433,12 @@ fun formatRelativeDate(
 @Composable
 private fun AddAlarmButtonFontScalePreview() {
 	val todayCalendar = Calendar.getInstance().apply {  set(Calendar.HOUR_OF_DAY, 19) }.timeInMillis
-	val tomorrowCalendar = Calendar.getInstance().apply {  set(Calendar.HOUR_OF_DAY, 21) }.timeInMillis
 	MaterialTheme {
 		SharedTransitionLayout {
 			AnimatedVisibility(visible = true) {
 				AlarmCard(
 					alarmData = AlarmData(
-						startTime = todayCalendar,
-						endTime = tomorrowCalendar,
-						frequencyInMin = 2L,
+						alarmTime = todayCalendar,
 						message = "",
 						id = 0,
 						sound = null,
