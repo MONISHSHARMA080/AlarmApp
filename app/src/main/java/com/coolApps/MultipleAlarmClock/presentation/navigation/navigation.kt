@@ -35,11 +35,12 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.coolApps.MultipleAlarmClock.data.paywall.OfferingState
 import com.coolApps.MultipleAlarmClock.data.paywall.PaywallTriggerType
-import com.coolApps.MultipleAlarmClock.data.preferences.OnboardingFlow
+// import com.coolApps.MultipleAlarmClock.data.preferences.OnboardingFlow — onboarding disabled, re-enable with new flow
 import com.coolApps.MultipleAlarmClock.presentation.home.AlarmContainer
-import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen
-import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen2
-import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen3
+// Onboarding disabled — kept composables for future flow
+// import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen
+// import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen2
+// import com.coolApps.MultipleAlarmClock.presentation.onboarding.OnboardingScreen3
 import com.coolApps.MultipleAlarmClock.presentation.picker.EditAlarmFlowScreen
 import com.coolApps.MultipleAlarmClock.presentation.picker.NewAlarmFlowScreen
 import com.coolApps.MultipleAlarmClock.presentation.settings.PremiumPaywallDialog
@@ -48,25 +49,27 @@ import com.revenuecat.purchases.ui.revenuecatui.Paywall
 import com.revenuecat.purchases.ui.revenuecatui.PaywallOptions
 import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 
+// Onboarding disabled — app launches straight to home. Re-enable by restoring the
+// isFirstLaunch/onboardingFlow gating below and the onboarding entries.
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable fun NavigationStack(navViewModel: NavigationViewModel, deepLinkScreen: Screen?) {
-	val isFirstLaunch by navViewModel.isFirstLaunch.collectAsStateWithLifecycle()
-	val onboardingFlow by navViewModel.onboardingFlow.collectAsStateWithLifecycle()
-	if (isFirstLaunch == null) return
-	if (isFirstLaunch == true && onboardingFlow == OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) return
+	// val isFirstLaunch by navViewModel.isFirstLaunch.collectAsStateWithLifecycle()
+	// val onboardingFlow by navViewModel.onboardingFlow.collectAsStateWithLifecycle()
+	// if (isFirstLaunch == null) return
+	// if (isFirstLaunch == true && onboardingFlow == OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) return
 
-	val startKeys = remember(deepLinkScreen, isFirstLaunch, onboardingFlow) {
+	val startKeys = remember(deepLinkScreen) {
 		when {
 			deepLinkScreen != null && deepLinkScreen != Screen.AlarmContainer ->
 				listOf(Screen.AlarmContainer, deepLinkScreen)
 			deepLinkScreen != null -> listOf(deepLinkScreen)
-			isFirstLaunch == true -> listOf(
-				when (onboardingFlow) {
-					OnboardingFlow.ONBOARDING_FLOW_VARIANT_SHORT -> Screen.OnboardingScreen2
-					OnboardingFlow.ONBOARDING_FLOW_VARIANT_V3 -> Screen.OnboardingScreen3
-					else -> Screen.OnboardingScreen
-				}
-			)
+			// isFirstLaunch == true -> listOf(
+			// 	when (onboardingFlow) {
+			// 		OnboardingFlow.ONBOARDING_FLOW_VARIANT_SHORT -> Screen.OnboardingScreen2
+			// 		OnboardingFlow.ONBOARDING_FLOW_VARIANT_V3 -> Screen.OnboardingScreen3
+			// 		else -> Screen.OnboardingScreen
+			// 	}
+			// )
 			else -> listOf<Screen>(Screen.AlarmContainer)
 		}
 	}
@@ -86,12 +89,13 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 		?.let { trigger -> offeringsByPlacement[trigger.placementId] }
 		?: OfferingState.Loading
 
-	LaunchedEffect(isFirstLaunch) {
-		if (isFirstLaunch == false && deepLinkScreen == null) {
-			backStack.clear()
-			backStack.add(Screen.AlarmContainer)
-		}
-	}
+	// Onboarding disabled — no need to reset stack after first launch
+	// LaunchedEffect(isFirstLaunch) {
+	// 	if (isFirstLaunch == false && deepLinkScreen == null) {
+	// 		backStack.clear()
+	// 		backStack.add(Screen.AlarmContainer)
+	// 	}
+	// }
 	val currentScreen = backStack.lastOrNull() as? Screen
 	LaunchedEffect(currentScreen) {
 		currentScreen?.let { navViewModel.screen(it.screenName) }
@@ -135,17 +139,18 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 
 				entryProvider = entryProvider {
 
-					entry<Screen.OnboardingScreen> {
-						OnboardingScreen(onShowPaywall = { paywallTriggerType = it })
-					}
-
-					entry<Screen.OnboardingScreen2> {
-						OnboardingScreen2()
-					}
-
-					entry<Screen.OnboardingScreen3> {
-						OnboardingScreen3()
-					}
+					// Onboarding disabled — kept for future flow, re-enable by restoring these entries
+				// entry<Screen.OnboardingScreen> {
+				// 	OnboardingScreen(onShowPaywall = { paywallTriggerType = it })
+				// }
+				//
+				// entry<Screen.OnboardingScreen2> {
+				// 	OnboardingScreen2()
+				// }
+				//
+				// entry<Screen.OnboardingScreen3> {
+				// 	OnboardingScreen3()
+				// }
 
 					entry<Screen.SettingsScreen> {
 						// dropUnlessResumed ignores taps once this entry is no longer RESUMED

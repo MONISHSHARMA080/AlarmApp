@@ -7,9 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.coolApps.MultipleAlarmClock.data.paywall.OfferingState
 import com.coolApps.MultipleAlarmClock.data.paywall.PaywallEvent
 import com.coolApps.MultipleAlarmClock.data.paywall.PaywallTriggerType
-import com.coolApps.MultipleAlarmClock.data.preferences.OnboardingFlow
+// import com.coolApps.MultipleAlarmClock.data.preferences.OnboardingFlow — onboarding disabled
 import com.coolApps.MultipleAlarmClock.data.preferences.Settings
-import com.coolApps.MultipleAlarmClock.data.preferences.copy
+// import com.coolApps.MultipleAlarmClock.data.preferences.copy — onboarding disabled
 import com.coolApps.MultipleAlarmClock.presentation.logD
 import com.coolApps.MultipleAlarmClock.util.Analytics
 import com.coolApps.MultipleAlarmClock.util.TrialReminderScheduler
@@ -22,13 +22,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+// import kotlinx.coroutines.flow.first — onboarding disabled
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.random.Random
+// import kotlin.random.Random — onboarding disabled
 
 @HiltViewModel
 class NavigationViewModel @Inject constructor(
@@ -45,37 +45,39 @@ class NavigationViewModel @Inject constructor(
 			initialValue = null
 		)
 
-	private val _onboardingFlow = MutableStateFlow(OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED)
+	// Onboarding disabled — kept for future flow. Re-enable by restoring this block and its use in NavigationStack.
+	// private val _onboardingFlow = MutableStateFlow(OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED)
+	//
+	// val onboardingFlow: StateFlow<OnboardingFlow> = _onboardingFlow.asStateFlow()
+	//
+	// init {
+	// 	viewModelScope.launch {
+	// 		if (dataStore.data.first().isFirstLaunch) selectOnboardingFlow()
+	// 	}
+	// }
 
-	val onboardingFlow: StateFlow<OnboardingFlow> = _onboardingFlow.asStateFlow()
-
-	init {
-		viewModelScope.launch {
-			if (dataStore.data.first().isFirstLaunch) selectOnboardingFlow()
-		}
-	}
-
-	suspend fun selectOnboardingFlow(): OnboardingFlow {
-		val stored = dataStore.data.first().onboardingFlow
-		if (stored != OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) {
-			_onboardingFlow.value = stored
-			return stored
-		}
-		val flow = when (Random.nextInt(3)) {
-			0 -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_LONG
-			1 -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_SHORT
-			else -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_V3
-		}
-		_onboardingFlow.value = flow
-		logD("onboarding flow: assigned $flow")
-		analytics.captureEvent("onboarding_variant_assigned", mapOf("variant" to flow.name))
-		dataStore.updateData { prefs ->
-			if (prefs.onboardingFlow == OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) {
-				prefs.copy { onboardingFlow = flow }
-			} else prefs
-		}
-		return flow
-	}
+	// Onboarding disabled — kept for future flow
+	// suspend fun selectOnboardingFlow(): OnboardingFlow {
+	// 	val stored = dataStore.data.first().onboardingFlow
+	// 	if (stored != OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) {
+	// 		_onboardingFlow.value = stored
+	// 		return stored
+	// 	}
+	// 	val flow = when (Random.nextInt(3)) {
+	// 		0 -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_LONG
+	// 		1 -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_SHORT
+	// 		else -> OnboardingFlow.ONBOARDING_FLOW_VARIANT_V3
+	// 	}
+	// 	_onboardingFlow.value = flow
+	// 	logD("onboarding flow: assigned $flow")
+	// 	analytics.captureEvent("onboarding_variant_assigned", mapOf("variant" to flow.name))
+	// 	dataStore.updateData { prefs ->
+	// 		if (prefs.onboardingFlow == OnboardingFlow.ONBOARDING_FLOW_UNSPECIFIED) {
+	// 			prefs.copy { onboardingFlow = flow }
+	// 		} else prefs
+	// 	}
+	// 	return flow
+	// }
 
 	private val _offeringsByPlacement = MutableStateFlow<Map<String, OfferingState>>(emptyMap())
 

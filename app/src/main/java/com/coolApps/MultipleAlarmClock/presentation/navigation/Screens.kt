@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 sealed interface Screen : NavKey {
 	val screenName: String
 
+	// Onboarding disabled — app launches to AlarmContainer. Kept so the new flow can reuse these keys.
 	@Serializable
 	data object OnboardingScreen : Screen {
 		override val screenName = "OnboardingScreen"

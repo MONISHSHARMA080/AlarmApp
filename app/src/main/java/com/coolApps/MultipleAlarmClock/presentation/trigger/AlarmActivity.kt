@@ -232,7 +232,7 @@ class AlarmActivity : ComponentActivity() {
 	LaunchedEffect(Unit) {
 		while (true) {
 			amPm = getAmPm()
-			delay(30.seconds)
+			delay(20.seconds)
 		}
 	}
 
@@ -255,8 +255,8 @@ class AlarmActivity : ComponentActivity() {
 				  	},
                     interactionSource = stopInteractionSource,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
+                        containerColor = colorScheme.primaryContainer,
+                        contentColor = colorScheme.onPrimaryContainer
                     ),
                     shape = RoundedCornerShape(stopButtonCorner),
                     elevation = ButtonDefaults.buttonElevation(
@@ -271,8 +271,8 @@ class AlarmActivity : ComponentActivity() {
                 ) {
                     Surface(
                         shape = RoundedCornerShape(stopIconInnerCorner),
-                        color = colorScheme.onPrimary.copy(alpha = 0.18f),
-                        contentColor = colorScheme.onPrimary,
+                        color = colorScheme.onPrimaryContainer.copy(alpha = 0.18f),
+                        contentColor = colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
@@ -337,7 +337,7 @@ class AlarmActivity : ComponentActivity() {
                             text = currentTime,
                             color = colorScheme.primary,
                             fontWeight = FontWeight.Medium,
-                            style = typography.displayLarge
+                            style = typography.displayLargeEmphasized
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
