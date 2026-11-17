@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,7 +44,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -199,161 +197,166 @@ class AlarmActivity : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable fun TimeDisplay(onFinish: () -> Unit , message: String , modifier: Modifier = Modifier) {
-    var currentTime by remember { mutableStateOf(getCurrentTime()) }
-    var amPm by remember { mutableStateOf(getAmPm()) }
+@Composable
+fun TimeDisplay(onFinish: () -> Unit, message: String, modifier: Modifier = Modifier) {
+	val timeFormat = remember { SimpleDateFormat("hh:mm", Locale.getDefault()) }
+	val amPmFormat = remember { SimpleDateFormat("a", Locale.getDefault()) }
+	var currentTime by remember { mutableStateOf(timeFormat.format(Date())) }
+	var amPm by remember { mutableStateOf(amPmFormat.format(Date())) }
+
 	val colorScheme = MaterialTheme.colorScheme
+	val typography = MaterialTheme.typography
 	val view = LocalView.current
 
-    val stopInteractionSource = remember { MutableInteractionSource() }
-    val isStopPressed by stopInteractionSource.collectIsPressedAsState()
-    val stopButtonScale by animateFloatAsState(
-        targetValue = if (isStopPressed) 0.94f else 1f,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "stopButtonScale"
-    )
-    val stopButtonCorner by animateDpAsState(
-        targetValue = if (isStopPressed) 22.dp else 44.dp,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "stopButtonCorner"
-    )
-    val stopIconInnerCorner by animateDpAsState(
-        targetValue = if (isStopPressed) 12.dp else 24.dp,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "stopIconInnerCorner"
-    )
+	val stopInteractionSource = remember { MutableInteractionSource() }
+	val isStopPressed by stopInteractionSource.collectIsPressedAsState()
+	val stopButtonScale by animateFloatAsState(
+		targetValue = if (isStopPressed) 0.94f else 1f,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopButtonScale"
+	)
+	val stopButtonCorner by animateDpAsState(
+		targetValue = if (isStopPressed) 22.dp else 44.dp,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopButtonCorner"
+	)
+	val stopIconInnerCorner by animateDpAsState(
+		targetValue = if (isStopPressed) 12.dp else 24.dp,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopIconInnerCorner"
+	)
 
-    LaunchedEffect(Unit) {
-        while (true) {
-            currentTime = getCurrentTime()
-            delay(1.seconds)
-        }
-    }
 	LaunchedEffect(Unit) {
 		while (true) {
-			amPm = getAmPm()
-			delay(20.seconds)
+			val now = Date()
+			currentTime = timeFormat.format(now)
+			amPm = amPmFormat.format(now)
+			delay(1.seconds)
 		}
 	}
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeContent,
-        containerColor = colorScheme.surface,
-        bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Button(
-                    onClick = {
+	Scaffold(
+		modifier = Modifier.fillMaxSize(),
+		contentWindowInsets = WindowInsets.safeContent,
+		containerColor = colorScheme.surface,
+		bottomBar = {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.navigationBarsPadding()
+					.padding(horizontal = 16.dp, vertical = 14.dp),
+				contentAlignment = Alignment.Center
+			) {
+				Button(
+					onClick = {
 						view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 						onFinish()
-				  	},
-                    interactionSource = stopInteractionSource,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primaryContainer,
-                        contentColor = colorScheme.onPrimaryContainer
-                    ),
-                    shape = RoundedCornerShape(stopButtonCorner),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 6.dp,
-                        pressedElevation = 2.dp
-                    ),
-                    modifier = Modifier
-                        .scale(stopButtonScale)
-                        .height(74.dp)
-                        .widthIn(max = 520.dp)
-                        .fillMaxWidth(0.94f)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(stopIconInnerCorner),
-                        color = colorScheme.onPrimaryContainer.copy(alpha = 0.18f),
-                        contentColor = colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Icon(
-                                imageVector = Icons.Filled.Cancel,
-                                modifier = Modifier.size(28.dp),
-                                contentDescription = "Cancel"
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.stop_button),
-                        style = typography.headlineSmall,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.5.sp
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
-        BoxWithConstraints(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            val isCompactHeight = maxHeight < 460.dp
-            val defaultSpatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
-            val defaultEffectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
+					},
+					interactionSource = stopInteractionSource,
+					colors = ButtonDefaults.buttonColors(
+						containerColor = colorScheme.primaryContainer,
+						contentColor = colorScheme.onPrimaryContainer
+					),
+					shape = RoundedCornerShape(stopButtonCorner),
+					elevation = ButtonDefaults.buttonElevation(
+						defaultElevation = 0.dp,
+						pressedElevation = 0.dp,
+						focusedElevation = 0.dp,
+						hoveredElevation = 0.dp
+					),
+					modifier = Modifier
+						.scale(stopButtonScale)
+						.height(74.dp)
+						.widthIn(max = 520.dp)
+						.fillMaxWidth(0.94f)
+				) {
+					Surface(
+						shape = RoundedCornerShape(stopIconInnerCorner),
+						color = colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
+						contentColor = colorScheme.onPrimaryContainer,
+						modifier = Modifier.size(48.dp)
+					) {
+						Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+							Icon(
+								imageVector = Icons.Filled.Cancel,
+								modifier = Modifier.size(28.dp),
+								contentDescription = null
+							)
+						}
+					}
+					Spacer(modifier = Modifier.width(8.dp))
+					Text(
+						text = stringResource(R.string.stop_button),
+						style = typography.headlineSmall,
+						fontWeight = FontWeight.Medium
+					)
+				}
+			}
+		}
+	) { innerPadding ->
+		BoxWithConstraints(
+			modifier = modifier
+				.fillMaxSize()
+				.padding(innerPadding)
+				.padding(horizontal = 12.dp),
+			contentAlignment = Alignment.Center
+		) {
+			val isCompactHeight = maxHeight < 460.dp
+			val timeFontSize = minOf(maxWidth.value / 2.9f, maxHeight.value * 0.4f)
+				.coerceIn(56f, 168f).sp
+			val defaultSpatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+			val defaultEffectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
 
-            AnimatedContent(
-                targetState = message.isEmpty(),
-                transitionSpec = {
-                    (scaleIn(
-                        initialScale = 0.95f,
-                        animationSpec = defaultSpatialSpec
-                    ) + fadeIn(
-                        animationSpec = defaultEffectsSpec
-                    )) togetherWith (scaleOut(
-                        targetScale = 0.95f,
-                        animationSpec = defaultSpatialSpec
-                    ) + fadeOut(
-                        animationSpec = defaultEffectsSpec
-                    ))
-                },
-                label = "AlarmHeroContent"
-            ) { messageIsEmpty ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .widthIn(max = 640.dp)
-                        .padding(top = if (isCompactHeight) 12.dp else 28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = if (messageIsEmpty) Arrangement.Center else Arrangement.Top
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Text(
-                            text = currentTime,
-                            color = colorScheme.primary,
-                            fontWeight = FontWeight.Medium,
-                            style = typography.displayLargeEmphasized
-                        )
+			AnimatedContent(
+				targetState = message.isEmpty(),
+				transitionSpec = {
+					(scaleIn(
+						initialScale = 0.95f,
+						animationSpec = defaultSpatialSpec
+					) + fadeIn(
+						animationSpec = defaultEffectsSpec
+					)) togetherWith (scaleOut(
+						targetScale = 0.95f,
+						animationSpec = defaultSpatialSpec
+					) + fadeOut(
+						animationSpec = defaultEffectsSpec
+					))
+				},
+				label = "AlarmHeroContent"
+			) { messageIsEmpty ->
+				Column(
+					modifier = Modifier
+						.fillMaxSize()
+						.widthIn(max = 640.dp)
+						.padding(top = if (isCompactHeight) 12.dp else 28.dp),
+					horizontalAlignment = Alignment.CenterHorizontally,
+					verticalArrangement = if (messageIsEmpty) Arrangement.Center else Arrangement.Top
+				) {
+					Column(horizontalAlignment = Alignment.CenterHorizontally) {
+						Text(
+							text = currentTime,
+							color = colorScheme.onSurface,
+							maxLines = 1,
+							softWrap = false,
+							style = typography.displayLarge.copy(
+								fontSize = timeFontSize,
+								lineHeight = timeFontSize,
+								fontWeight = FontWeight.Normal,
+								letterSpacing = (-2).sp,
+								fontFeatureSettings = "tnum"
+							)
+						)
+						Text(
+							text = amPm,
+							color = colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+							style = typography.headlineMedium,
+							fontWeight = FontWeight.Medium,
+							letterSpacing = 2.sp
+						)
+					}
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = amPm,
-                            color = colorScheme.secondary,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(bottom = 12.dp),
-                            style = typography.titleLarge
-                        )
-                    }
-
-                    if (!messageIsEmpty) {
-                        Spacer(modifier = Modifier.height(20.dp))
-                        // Expressive Tonal Message Card
+					if (!messageIsEmpty) {
+						Spacer(modifier = Modifier.height(20.dp))
 						Box(modifier = Modifier.fillMaxSize()) {
 							Column(
 								modifier = Modifier
@@ -364,11 +367,9 @@ class AlarmActivity : ComponentActivity() {
 							) {
 								Text(
 									text = message,
-									color = colorScheme.onSurface,
-									style = typography.titleMedium,
-									fontWeight = FontWeight.Normal,
-									textAlign = TextAlign.Center,
-									lineHeight = 32.sp
+									color = colorScheme.onSurface.copy(alpha = 0.9f),
+									style = typography.headlineSmall,
+									textAlign = TextAlign.Center
 								)
 								Spacer(modifier = Modifier.height(24.dp))
 							}
@@ -379,12 +380,9 @@ class AlarmActivity : ComponentActivity() {
 									.height(36.dp)
 									.background(
 										brush = Brush.verticalGradient(
-											colors = listOf(
-												Color.Transparent,
-												colorScheme.surface
+											colors = listOf(Color.Transparent, colorScheme.surface)
 										)
 									)
-								)
 							)
 						}
 					}
@@ -392,12 +390,4 @@ class AlarmActivity : ComponentActivity() {
 			}
 		}
 	}
-}
-
-fun getCurrentTime(): String {
-	return SimpleDateFormat("h:mm:ss", Locale.getDefault()).format(Date())
-}
-
-fun getAmPm(): String {
-	return SimpleDateFormat("a", Locale.getDefault()).format(Date())
 }

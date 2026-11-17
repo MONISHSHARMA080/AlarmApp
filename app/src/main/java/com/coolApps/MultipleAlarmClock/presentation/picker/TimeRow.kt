@@ -79,10 +79,10 @@ fun TimeRow(
 	val containerSize = LocalWindowInfo.current.containerSize
 	val screenHeightDp = with(density) { containerSize.height.toDp() }
 	val screenWidthDp = with(density) { containerSize.width.toDp() }
-	// M3 Expressive style – Google Clock uses the largest display scale for the alarm time (hero moment)
-	val baseTimeStyle = if (screenWidthDp < 380.dp) typography.displayMediumEmphasized else typography.displayLargeEmphasized
-	val timeStyle = baseTimeStyle.copy(fontWeight = FontWeight.Black)
-	val amPmStyle = typography.titleLarge.copy(fontWeight = FontWeight.Black)
+	val baseTimeStyle = typography.displayLargeEmphasized
+	val timeStyle = baseTimeStyle.copy()
+
+	val amPmStyle = typography.titleLarge
 
 	val titleSpacing = (screenHeightDp * 0.03f).coerceIn(12.dp, 28.dp)
 
