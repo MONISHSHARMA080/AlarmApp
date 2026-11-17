@@ -4,16 +4,15 @@ import com.android.build.api.dsl.ApplicationExtension
 plugins {
     alias(libs.plugins.android.application)
 
-    id("com.google.devtools.ksp") version "2.3.9"
+    id("com.google.devtools.ksp") version "2.3.12"
     id ("kotlin-parcelize")
-    id("com.posthog.android") version "1.7.0"
+    id("com.posthog.android") version "1.8.0"
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.baselineprofile)
     alias(libs.plugins.jetbrains.kotlin.serialization)
-	id("com.google.protobuf") version "0.10.0"
+	id("com.google.protobuf") version "0.10.1"
     id("com.google.dagger.hilt.android")
 	id("androidx.room")
-//	id("com.android.application")
 	id("com.google.gms.google-services")
 }
 
