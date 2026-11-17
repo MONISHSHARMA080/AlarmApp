@@ -61,19 +61,20 @@ import kotlinx.coroutines.launch
 	val onboardingOffering: StateFlow<OfferingState> = _onboardingOffering.asStateFlow()
 
 	private suspend fun fetchOnboardingEndOffering() {
-		try {
-			val offerings = Purchases.sharedInstance.awaitOfferings()
-			// Placement offering first; `current` as fallback (covers the
-			// case before the placement has any "for all other cases" rule).
-			val serving = offerings
-				.getCurrentOfferingForPlacement(PaywallTriggerType.OnboardingEnd.placementId)
-				?: offerings.current
-			logD("Paywall: offering(${PaywallTriggerType.OnboardingEnd.placementId}) = ${serving?.identifier ?: "none"}, serving:$serving, offerings:$offerings")
-			_onboardingOffering.value = OfferingState.Loaded(serving)
-		} catch (e: PurchasesException) {
-			logD("Paywall: failed to fetch offerings for ${PaywallTriggerType.OnboardingEnd.placementId}: $e")
-			_onboardingOffering.value = OfferingState.Failed
-		}
+//		try {
+//			val offerings = Purchases.sharedInstance.awaitOfferings()
+//			// Placement offering first; `current` as fallback (covers the
+//			// case before the placement has any "for all other cases" rule).
+//			val serving = offerings
+//				.getCurrentOfferingForPlacement(PaywallTriggerType.OnboardingEnd.placementId)
+//				?: offerings.current
+//			logD("Paywall: offering(${PaywallTriggerType.OnboardingEnd.placementId}) = ${serving?.identifier ?: "none"}, serving:$serving, offerings:$offerings")
+//			_onboardingOffering.value = OfferingState.Loaded(serving)
+//		} catch (e: PurchasesException) {
+//			logD("Paywall: failed to fetch offerings for ${PaywallTriggerType.OnboardingEnd.placementId}: $e")
+//			_onboardingOffering.value = OfferingState.Failed
+//		}
+		_onboardingOffering.value = OfferingState.Failed
 	}
 
 	fun refreshPermissions() {

@@ -221,18 +221,18 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 
 					entry<Screen.Paywall> {
 						val onDismiss = dropUnlessResumed { popBackStack() }
-						Paywall(
-							options = PaywallOptions.Builder(
-								dismissRequest = onDismiss
-							).build()
-						)
+//						Paywall(
+//							options = PaywallOptions.Builder(
+//								dismissRequest = onDismiss
+//							).build()
+//						)
 					}
 
 					entry<Screen.CustomerCenter> {
 						val onDismiss = dropUnlessResumed { popBackStack() }
-						CustomerCenter(
-							onDismiss = onDismiss
-						)
+//						CustomerCenter(
+//							onDismiss = onDismiss
+//						)
 					}
 				}
 			)

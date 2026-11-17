@@ -32,11 +32,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
@@ -77,8 +75,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.coolApps.MultipleAlarmClock.R
-import com.coolApps.MultipleAlarmClock.presentation.logD
 import com.coolApps.MultipleAlarmClock.data.paywall.PaywallTriggerType
+import com.coolApps.MultipleAlarmClock.presentation.logD
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -174,54 +172,54 @@ fun SettingsScreen(
 				// PREMIUM
 				// ---------------------------------------------------------
 
-				item {
-					SettingsSection(
-						title = stringResource(R.string.settings_section_premium)
-					) {
-						SettingsListItem(
-							icon = Icons.Outlined.WorkspacePremium,
-							title = if (isPro) {
-								stringResource(R.string.settings_premium_active)
-							} else {
-								stringResource(R.string.settings_premium_go_pro)
-							},
-							subtitle = if (isPro) {
-								stringResource(R.string.settings_premium_manage_subscription)
-							} else {
-								stringResource(R.string.settings_premium_unlock_features)
-							},
-							onClick = {
-								if (isPro) {
-									onNavigateToCustomerCenter()
-								} else {
-									onShowPaywall(PaywallTriggerType.PremiumFeature)
-								}
-							},
-							trailing = {
-								Surface(
-									shape = RoundedCornerShape(10.dp),
-									color = if (!isPro) {
-										MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-									} else {
-										MaterialTheme.colorScheme.surfaceContainerHighest
-									},
-									modifier = Modifier.size(32.dp)
-								) {
-									Box(contentAlignment = Alignment.Center) {
-										Icon(
-											imageVector = Icons.Filled.ChevronRight,
-											contentDescription = null,
-											modifier = Modifier.size(20.dp)
-										)
-									}
-								}
-							},
-							emphasized = !isPro,
-							topCorner = 24.dp,
-							bottomCorner = 24.dp
-						)
-					}
-				}
+//				item {
+//					SettingsSection(
+//						title = stringResource(R.string.settings_section_premium)
+//					) {
+//						SettingsListItem(
+//							icon = Icons.Outlined.WorkspacePremium,
+//							title = if (isPro) {
+//								stringResource(R.string.settings_premium_active)
+//							} else {
+//								stringResource(R.string.settings_premium_go_pro)
+//							},
+//							subtitle = if (isPro) {
+//								stringResource(R.string.settings_premium_manage_subscription)
+//							} else {
+//								stringResource(R.string.settings_premium_unlock_features)
+//							},
+//							onClick = {
+//								if (isPro) {
+//									onNavigateToCustomerCenter()
+//								} else {
+//									onShowPaywall(PaywallTriggerType.PremiumFeature)
+//								}
+//							},
+//							trailing = {
+//								Surface(
+//									shape = RoundedCornerShape(10.dp),
+//									color = if (!isPro) {
+//										MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+//									} else {
+//										MaterialTheme.colorScheme.surfaceContainerHighest
+//									},
+//									modifier = Modifier.size(32.dp)
+//								) {
+//									Box(contentAlignment = Alignment.Center) {
+//										Icon(
+//											imageVector = Icons.Filled.ChevronRight,
+//											contentDescription = null,
+//											modifier = Modifier.size(20.dp)
+//										)
+//									}
+//								}
+//							},
+//							emphasized = !isPro,
+//							topCorner = 24.dp,
+//							bottomCorner = 24.dp
+//						)
+//					}
+//				}
 
 				// ---------------------------------------------------------
 				// FEEDBACK

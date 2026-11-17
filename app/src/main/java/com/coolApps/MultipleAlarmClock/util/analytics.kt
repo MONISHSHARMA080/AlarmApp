@@ -299,21 +299,21 @@ class Analytics(
 				 ) else mapOf("id_source" to "uuid_fallback")
 			 )
 			 // ---- RevenueCat link ----
-			 if (Purchases.isConfigured) {
-				 val purchases = Purchases.sharedInstance
-
-				 purchases.setPostHogUserId(id)
-
-				 // Past RC events were sent under RC's own ID, so merge that person into this one (once)
-				 val rcId = purchases.appUserID
-				 val aliasKey = "rc_aliased_$rcId"
-				 if (!prefs.getBoolean(aliasKey, false)) {
-					 PostHog.alias(rcId)
-					 prefs.edit { putBoolean(aliasKey, true) }
-				 }
-			 } else {
-				 logD("RevenueCat not configured, skipping link")
-			 }
+//			 if (Purchases.isConfigured) {
+//				 val purchases = Purchases.sharedInstance
+//
+//				 purchases.setPostHogUserId(id)
+//
+//				 // Past RC events were sent under RC's own ID, so merge that person into this one (once)
+//				 val rcId = purchases.appUserID
+//				 val aliasKey = "rc_aliased_$rcId"
+//				 if (!prefs.getBoolean(aliasKey, false)) {
+//					 PostHog.alias(rcId)
+//					 prefs.edit { putBoolean(aliasKey, true) }
+//				 }
+//			 } else {
+//				 logD("RevenueCat not configured, skipping link")
+//			 }
 		 }
 	}
 }

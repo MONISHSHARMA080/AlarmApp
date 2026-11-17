@@ -71,13 +71,13 @@ class ResetAlarmAfterBoot @AssistedInject constructor(
 	 * Uses RevenueCat's cached CustomerInfo so this works offline.
 	 */
 	private suspend fun rescheduleTrialReminderIfNeeded() {
-		try {
-			val customerInfo = Purchases.sharedInstance.awaitCustomerInfo()
-			TrialReminderScheduler.scheduleIfOnTrial(applicationContext, customerInfo)
-		} catch (_: Exception) {
-			// Non-critical — if cache is empty and offline, we skip.
-			// The reminder is a best-effort enhancement.
-		}
+//		try {
+//			val customerInfo = Purchases.sharedInstance.awaitCustomerInfo()
+//			TrialReminderScheduler.scheduleIfOnTrial(applicationContext, customerInfo)
+//		} catch (_: Exception) {
+//			// Non-critical — if cache is empty and offline, we skip.
+//			// The reminder is a best-effort enhancement.
+//		}
 	}
 
 	private suspend fun getAllAlarms(alarmRepository: AlarmRepository): List<AlarmData> {

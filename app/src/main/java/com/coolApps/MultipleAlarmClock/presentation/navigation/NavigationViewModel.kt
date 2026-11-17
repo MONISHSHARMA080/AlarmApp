@@ -84,25 +84,25 @@ class NavigationViewModel @Inject constructor(
 	val offeringsByPlacement: StateFlow<Map<String, OfferingState>> = _offeringsByPlacement.asStateFlow()
 
 	fun requestPaywallOffering(trigger: PaywallTriggerType) {
-		when (_offeringsByPlacement.value[trigger.placementId]) {
-			is OfferingState.Loaded, OfferingState.Loading -> return
-			else -> Unit // absent or Failed — (re)start the fetch
-		}
-		viewModelScope.launch {
-			_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Loading) }
-			try {
-				val offerings = Purchases.sharedInstance.awaitOfferings()
-				// Placement offering first; `current` as fallback (covers the
-				// case before the placement has any "for all other cases" rule).
-				val serving = offerings.getCurrentOfferingForPlacement(trigger.placementId)
-					?: offerings.current
-				logD("Paywall: offering(${trigger.placementId}) = ${serving?.identifier ?: "none"}")
-				_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Loaded(serving)) }
-			} catch (e: PurchasesException) {
-				logD("Paywall: failed to fetch offerings for ${trigger.placementId}: $e")
-				_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Failed) }
-			}
-		}
+//		when (_offeringsByPlacement.value[trigger.placementId]) {
+//			is OfferingState.Loaded, OfferingState.Loading -> return
+//			else -> Unit // absent or Failed — (re)start the fetch
+//		}
+//		viewModelScope.launch {
+//			_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Loading) }
+//			try {
+//				val offerings = Purchases.sharedInstance.awaitOfferings()
+//				// Placement offering first; `current` as fallback (covers the
+//				// case before the placement has any "for all other cases" rule).
+//				val serving = offerings.getCurrentOfferingForPlacement(trigger.placementId)
+//					?: offerings.current
+//				logD("Paywall: offering(${trigger.placementId}) = ${serving?.identifier ?: "none"}")
+//				_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Loaded(serving)) }
+//			} catch (e: PurchasesException) {
+//				logD("Paywall: failed to fetch offerings for ${trigger.placementId}: $e")
+//				_offeringsByPlacement.update { it + (trigger.placementId to OfferingState.Failed) }
+//			}
+//		}
 	}
 
 
