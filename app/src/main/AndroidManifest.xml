@@ -112,8 +112,8 @@
             android:name="com.coolApps.MultipleAlarmClock.receiver.ScheduledNotificationReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.coolApps.MultipleAlarmClock.ACTION_SHOW_OFFLINE_NOTIFICATION" />
-                <action android:name="com.coolApps.MultipleAlarmClock.ACTION_TRIAL_REMINDER" />
+                <action android:name="com.coolApps.AlarmClock.ACTION_SHOW_OFFLINE_NOTIFICATION" />
+                <action android:name="com.coolApps.AlarmClock.ACTION_TRIAL_REMINDER" />
             </intent-filter>
         </receiver>
 

@@ -69,7 +69,7 @@ fun Project.configureAndroid() {
         }
 
         defaultConfig {
-            applicationId = "com.coolApps.MultipleAlarmClock"
+            applicationId = "com.coolApps.AlarmClock"
             minSdk = 33
             targetSdk = 37
             versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1

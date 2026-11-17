@@ -82,8 +82,8 @@ class ScheduledNotificationReceiver : BroadcastReceiver() {
 	}
 
 	companion object {
-		const val ACTION_TRIAL_REMINDER = "com.coolApps.MultipleAlarmClock.ACTION_TRIAL_REMINDER"
-		const val ACTION_SHOW_OFFLINE_NOTIFICATION = "com.coolApps.MultipleAlarmClock.ACTION_SHOW_OFFLINE_NOTIFICATION"
+		const val ACTION_TRIAL_REMINDER = "com.coolApps.AlarmClock.ACTION_TRIAL_REMINDER"
+		const val ACTION_SHOW_OFFLINE_NOTIFICATION = "com.coolApps.AlarmClock.ACTION_SHOW_OFFLINE_NOTIFICATION"
 		
 		const val EXTRA_SLOT_NAME = "extra_slot_name"
 		const val EXTRA_NOTIFICATION_ID = "extra_notification_id"

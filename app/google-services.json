@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:507706419060:android:30e033cb05952e5c672e21",
         "android_client_info": {
-          "package_name": "com.coolApps.MultipleAlarmClock"
+          "package_name": "com.coolApps.AlarmClock"
         }
       },
       "oauth_client": [],

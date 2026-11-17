@@ -85,7 +85,7 @@ class BaselineProfileGenerator {
 				setPackage(packageName)
 				component = android.content.ComponentName(
 					packageName,
-					"com.coolApps.MultipleAlarmClock.alarmFeature.receiver.AlarmReceiver"
+					"com.coolApps.MultipleAlarmClock.receiver.AlarmReceiver"
 				)
 				putExtra("intentData", mockData)
 			}
