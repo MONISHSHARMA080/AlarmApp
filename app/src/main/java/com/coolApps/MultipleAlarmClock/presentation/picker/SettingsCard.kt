@@ -112,7 +112,6 @@ private val SegmentedTopShape = RoundedCornerShape(
 )
 
 private val SegmentedMiddleShape = RoundedCornerShape(6.dp)
-
 private val SegmentedBottomShape = RoundedCornerShape(
 	topStart = 6.dp,
 	topEnd = 6.dp,
