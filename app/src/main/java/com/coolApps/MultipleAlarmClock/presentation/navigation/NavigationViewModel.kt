@@ -113,18 +113,19 @@ class NavigationViewModel @Inject constructor(
 	}
 
 	fun onPaywallEvent(event: PaywallEvent) {
-		viewModelScope.launch {
-			analytics.captureEvent(event.eventName, event.eventParams)
-			when (event) {
-				is PaywallEvent.PurchaseCompleted -> {
-					TrialReminderScheduler.scheduleIfOnTrial(context, event.customerInfo)
-				}
-				is PaywallEvent.RestoreCompleted -> {
-					TrialReminderScheduler.scheduleIfOnTrial(context, event.customerInfo)
-				}
-				else -> Unit
-			}
-		}
+		// Paywall/RevenueCat disabled in this repo
+		// viewModelScope.launch {
+		// 	analytics.captureEvent(event.eventName, event.eventParams)
+		// 	when (event) {
+		// 		is PaywallEvent.PurchaseCompleted -> {
+		// 			TrialReminderScheduler.scheduleIfOnTrial(context, event.customerInfo)
+		// 		}
+		// 		is PaywallEvent.RestoreCompleted -> {
+		// 			TrialReminderScheduler.scheduleIfOnTrial(context, event.customerInfo)
+		// 		}
+		// 		else -> Unit
+		// 	}
+		// }
 	}
 
 	fun screen(screenName: String, properties: Map<String, Any>? = null) {

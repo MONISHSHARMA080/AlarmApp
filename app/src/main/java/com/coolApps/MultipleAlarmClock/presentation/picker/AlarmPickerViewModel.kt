@@ -97,7 +97,8 @@ class AlarmPickerViewModel @AssistedInject constructor(
 				_selectedAlarmSound.value = alarmSoundRepository.resolveSound(initialSoundUri)
 			}
 		}
-		observePremiumAccess()
+		// Paywall/RevenueCat disabled in this repo
+		// observePremiumAccess()
 	}
 
 	fun consumePaywallTrigger() {
@@ -208,16 +209,17 @@ class AlarmPickerViewModel @AssistedInject constructor(
 	}
 
 	fun onAlarmSoundSelected(sound: AlarmSound?) {
-		val isSoundPickerPremium = analytics.featureFlagsData.value?.isSoundPickerPremium ?: true
-		if (isSoundPickerPremium && !isPremium.value && sound != null) {
-			_uiState.update {
-				it.copy(
-					paywallTriggerType = PaywallTriggerType.PremiumFeature,
-					pendingSound = sound
-				)
-			}
-			return
-		}
+		// Paywall disabled in this repo
+		// val isSoundPickerPremium = analytics.featureFlagsData.value?.isSoundPickerPremium ?: true
+		// if (isSoundPickerPremium && !isPremium.value && sound != null) {
+		// 	_uiState.update {
+		// 		it.copy(
+		// 			paywallTriggerType = PaywallTriggerType.PremiumFeature,
+		// 			pendingSound = sound
+		// 		)
+		// 	}
+		// 	return
+		// }
 
 		_selectedAlarmSound.value = sound
 		_uiState.update {
@@ -304,16 +306,17 @@ class AlarmPickerViewModel @AssistedInject constructor(
 	}
 
 	fun updateRingDuration(newDuration: Long) {
-		val isSnoozePremium = analytics.featureFlagsData.value?.isSnoozePremium ?: false
-		if (isSnoozePremium && !isPremium.value) {
-			_uiState.update {
-				it.copy(
-					paywallTriggerType = PaywallTriggerType.PremiumFeature,
-					pendingRingDuration = newDuration
-				)
-			}
-			return
-		}
+		// Paywall disabled in this repo
+		// val isSnoozePremium = analytics.featureFlagsData.value?.isSnoozePremium ?: false
+		// if (isSnoozePremium && !isPremium.value) {
+		// 	_uiState.update {
+		// 		it.copy(
+		// 			paywallTriggerType = PaywallTriggerType.PremiumFeature,
+		// 			pendingRingDuration = newDuration
+		// 		)
+		// 	}
+		// 	return
+		// }
 		applyRingDuration(newDuration)
 	}
 
@@ -331,14 +334,15 @@ class AlarmPickerViewModel @AssistedInject constructor(
 		_uiState.update { it.copy(alarmData = it.alarmData.copy(message = newMessage)) }
 	}
 
-	fun updateIsForceLoudVolume(isForceLoudVolume: Boolean) {
-		when {
-			isPremium.value -> {
-				_uiState.update { it.copy(alarmData = it.alarmData.copy(isForceLoudVolume = isForceLoudVolume)) }
-			}
-			else -> {
-				_uiState.update { it.copy(paywallTriggerType = PaywallTriggerType.PremiumFeature) }
-			}
+	fun updateAlarmVolume(alarmVolume: Float?) {
+		// Paywall disabled in this repo
+		// val isCustomAlarmVolumePremium = analytics.featureFlagsData.value?.isCustomAlarmVolumePremium ?: false
+		// if (alarmVolume != null && isCustomAlarmVolumePremium && !isPremium.value) {
+		// 	_uiState.update { it.copy(paywallTriggerType = PaywallTriggerType.PremiumFeature) }
+		// 	return
+		// }
+		_uiState.update {
+			it.copy(alarmData = it.alarmData.copy(alarmVolume = alarmVolume?.coerceIn(0f, 1f)))
 		}
 	}
 
@@ -382,22 +386,24 @@ class AlarmPickerViewModel @AssistedInject constructor(
 	}
 
 	fun onRepeatDayClicked(day: DayOfWeek) {
-		viewModelScope.launch {
-			val isWeeklyRepeatPremium = analytics.featureFlagsData.value?.isWeeklyRepeatPremium ?: true
-			when{
-				!isWeeklyRepeatPremium || isPremium.value ->{
-					toggleRepeatDay(day)
-				}
-				else ->{
-					_uiState.update {
-						it.copy(
-							paywallTriggerType = PaywallTriggerType.PremiumFeature,
-							pendingRepeatDay = day
-						)
-					}
-				}
-			}
-		}
+		// Paywall disabled in this repo
+		// viewModelScope.launch {
+		// 	val isWeeklyRepeatPremium = analytics.featureFlagsData.value?.isWeeklyRepeatPremium ?: true
+		// 	when{
+		// 		!isWeeklyRepeatPremium || isPremium.value ->{
+		// 			toggleRepeatDay(day)
+		// 		}
+		// 		else ->{
+		// 			_uiState.update {
+		// 				it.copy(
+		// 					paywallTriggerType = PaywallTriggerType.PremiumFeature,
+		// 					pendingRepeatDay = day
+		// 				)
+		// 			}
+		// 		}
+		// 	}
+		// }
+		toggleRepeatDay(day)
 	}
 
 	fun toggleRepeatDay(day: DayOfWeek) {

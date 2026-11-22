@@ -106,6 +106,7 @@ fun EditAlarmScreen(
 		alarmSetProceed: () -> Unit,
 		settingAlarmCancelled: () -> Unit,
 		onNavigateToSoundList: () -> Unit,
+		onNavigateToMissionList: () -> Unit,
 		onShowPaywall: (PaywallTriggerType) -> Unit,
 		alarmData: AlarmData,
 		viewModel: AlarmPickerViewModel,
@@ -128,12 +129,13 @@ fun EditAlarmScreen(
 			alarmSetProceed()
 		}
 	}
-	LaunchedEffect(uiState.paywallTriggerType) {
-		uiState.paywallTriggerType?.let { trigger ->
-			onShowPaywall(trigger)
-			viewModel.consumePaywallTrigger()
-		}
-	}
+	// Paywall disabled in this repo
+	// LaunchedEffect(uiState.paywallTriggerType) {
+	// 	uiState.paywallTriggerType?.let { trigger ->
+	// 		onShowPaywall(trigger)
+	// 		viewModel.consumePaywallTrigger()
+	// 	}
+	// }
 
 	LifecycleResumeEffect(Unit) {
 		viewModel.checkPermissions(context)
@@ -238,6 +240,7 @@ fun EditAlarmScreen(
 			alarmId = alarmData.id,
 			showCalendarRequest = { showCalendar = true },
 			onNavigateToSoundList = onNavigateToSoundList,
+			onNavigateToMissionList = onNavigateToMissionList,
 			sharedTransitionScope = sharedTransitionScope,
 			animatedVisibilityScope = animatedVisibilityScope,
 			animateScroll = false
@@ -260,6 +263,7 @@ fun NewAlarmScreen(
 		alarmSetProceed: () -> Unit,
 		settingAlarmCancelled: () -> Unit,
 		onNavigateToSoundList: () -> Unit,
+		onNavigateToMissionList: () -> Unit,
 		onShowPaywall: (PaywallTriggerType) -> Unit,
 		linearProgressBar: (@Composable () -> Unit)? = null,
 		viewModel: AlarmPickerViewModel,
@@ -286,12 +290,13 @@ fun NewAlarmScreen(
 			alarmSetProceed()
 		}
 	}
-	LaunchedEffect(uiState.paywallTriggerType) {
-		uiState.paywallTriggerType?.let { trigger ->
-			onShowPaywall(trigger)
-			viewModel.consumePaywallTrigger()
-		}
-	}
+	// Paywall disabled in this repo
+	// LaunchedEffect(uiState.paywallTriggerType) {
+	// 	uiState.paywallTriggerType?.let { trigger ->
+	// 		onShowPaywall(trigger)
+	// 		viewModel.consumePaywallTrigger()
+	// 	}
+	// }
 
 	LifecycleResumeEffect(Unit) {
 		viewModel.checkPermissions(context)
@@ -468,6 +473,7 @@ fun NewAlarmScreen(
 							alarmId = null,
 							showCalendarRequest = { showCalendar = true },
 							onNavigateToSoundList = onNavigateToSoundList,
+							onNavigateToMissionList = onNavigateToMissionList,
 							// NewAlarmScreen never participates in the card hero transition
 							sharedTransitionScope = null,
 							animatedVisibilityScope = null,
@@ -559,6 +565,7 @@ private fun AlarmEditorBody(
 		alarmId: Int?,
 		showCalendarRequest: () -> Unit,
 		onNavigateToSoundList: () -> Unit,
+		onNavigateToMissionList: () -> Unit,
 		sharedTransitionScope: SharedTransitionScope? = null,
 		animatedVisibilityScope: AnimatedVisibilityScope? = null,
 		animateScroll: Boolean
@@ -636,9 +643,13 @@ private fun AlarmEditorBody(
 				uiState = uiState,
 				updateRingDuration = { viewModel.updateRingDuration(it) },
 				messageValueChanged = { viewModel.updateMessage(it) },
-				updateIsForceLoudVolume = { viewModel.updateIsForceLoudVolume(it) },
+				updateAlarmVolume = { viewModel.updateAlarmVolume(it) },
 				calenderButtonClicked = showCalendarRequest,
 				selectSoundButtonClicked = onNavigateToSoundList,
+				selectMissionButtonClicked = {
+					viewModel.captureEvent("mission_row_clicked", mapOf("is_edit" to (alarmId != null)))
+					onNavigateToMissionList()
+				},
 				repeatDayToggled = { day -> viewModel.onRepeatDayClicked(day) },
 				selectedSoundName = selectedSoundTitle ?: stringResource(R.string.alarm_picker_sound_random),
 				modifier = Modifier.weight(1f, fill = false),

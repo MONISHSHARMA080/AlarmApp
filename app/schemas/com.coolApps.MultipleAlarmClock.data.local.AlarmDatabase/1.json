@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "5bdd5fd06dc63c8492c279a8f7fd84ac",
+    "identityHash": "7bee95eb84034e1fbab8ded51d766be1",
     "entities": [
       {
         "tableName": "AlarmData",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `alarmTime` INTEGER NOT NULL, `message` TEXT NOT NULL, `sound` TEXT, `is_ready_to_use` INTEGER NOT NULL, `repeat_days` INTEGER DEFAULT NULL, `is_force_loud_volume` INTEGER NOT NULL DEFAULT 0, `ring_duration_in_min` INTEGER NOT NULL DEFAULT 2)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `alarmTime` INTEGER NOT NULL, `message` TEXT NOT NULL, `sound` TEXT, `is_ready_to_use` INTEGER NOT NULL, `repeat_days` INTEGER DEFAULT NULL, `alarm_volume` REAL DEFAULT NULL, `ring_duration_in_min` INTEGER NOT NULL DEFAULT 2)",
         "fields": [
           {
             "fieldPath": "id",
@@ -44,11 +44,10 @@
             "defaultValue": "NULL"
           },
           {
-            "fieldPath": "isForceLoudVolume",
-            "columnName": "is_force_loud_volume",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
+            "fieldPath": "alarmVolume",
+            "columnName": "alarm_volume",
+            "affinity": "REAL",
+            "defaultValue": "NULL"
           },
           {
             "fieldPath": "ringDurationInMin",
@@ -79,7 +78,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5bdd5fd06dc63c8492c279a8f7fd84ac')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7bee95eb84034e1fbab8ded51d766be1')"
     ]
   }
 }

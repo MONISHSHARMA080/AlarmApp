@@ -101,12 +101,13 @@ import com.coolApps.MultipleAlarmClock.data.paywall.PaywallTriggerType
 	val selectedAlarmSound by vm.selectedAlarmSound.collectAsStateWithLifecycle()
 	val uiState by vm.uiState.collectAsStateWithLifecycle()
 
-	LaunchedEffect(uiState.paywallTriggerType) {
-		uiState.paywallTriggerType?.let { trigger ->
-			onShowPaywall(trigger)
-			vm.consumePaywallTrigger()
-		}
-	}
+	// Paywall disabled in this repo
+	// LaunchedEffect(uiState.paywallTriggerType) {
+	// 	uiState.paywallTriggerType?.let { trigger ->
+	// 		onShowPaywall(trigger)
+	// 		vm.consumePaywallTrigger()
+	// 	}
+	// }
 	
 	LaunchedEffect(uiState.soundSelectionCompletedGoBack) {
 		if (uiState.soundSelectionCompletedGoBack) {

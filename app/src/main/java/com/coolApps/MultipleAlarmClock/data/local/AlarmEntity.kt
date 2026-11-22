@@ -1,9 +1,9 @@
 package com.coolApps.MultipleAlarmClock.data.local
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -21,14 +21,14 @@ data class AlarmData(
 	val sound: String?,
 	@ColumnInfo(name = "is_ready_to_use") val isReadyToUse: Boolean,
 	@ColumnInfo(name = "repeat_days", defaultValue = "NULL") val repeatDays: RepeatDays? = null,
-	@ColumnInfo(name = "is_force_loud_volume", defaultValue = "0") val isForceLoudVolume: Boolean = false,
+	@ColumnInfo(name = "alarm_volume", defaultValue = "NULL") val alarmVolume: Float? = null,
 	@ColumnInfo(name = "ring_duration_in_min", defaultValue = "2") val ringDurationInMin: Long = 2
 ){
 	private fun getDateTimeFormatted(time:Long):String{
 		return SimpleDateFormat("hh:mm a dd/MM/yyyy", Locale.getDefault()).format(time)
 	}
 	override fun toString(): String {
-		return "AlarmData: alarmTime:${getDateTimeFormatted(alarmTime)}, message:$message ringDurationInMin:$ringDurationInMin alarmSoundUri:$sound repeatDays:$repeatDays, id:$id, isREadyToUse:$isReadyToUse, isForceLoudVolume:$isForceLoudVolume"
+		return "AlarmData: alarmTime:${getDateTimeFormatted(alarmTime)}, message:$message ringDurationInMin:$ringDurationInMin alarmSoundUri:$sound repeatDays:$repeatDays, id:$id, isREadyToUse:$isReadyToUse, alarmVolume:$alarmVolume"
 	}
 
 	val alarmTimeCalendar: Calendar get() = Calendar.getInstance().apply { timeInMillis = alarmTime }

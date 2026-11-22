@@ -81,13 +81,13 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 		if (backStack.size > 1) backStack.removeLastOrNull()
 	}
 
-	var paywallTriggerType by remember { mutableStateOf<PaywallTriggerType?>(null) }
-	val offeringsByPlacement by navViewModel.offeringsByPlacement.collectAsStateWithLifecycle()
-
-	// Offering state (fetch/resolution) for the trigger currently shown.
-	val billingState = paywallTriggerType
-		?.let { trigger -> offeringsByPlacement[trigger.placementId] }
-		?: OfferingState.Loading
+	// Paywall/RevenueCat disabled in this repo
+	// var paywallTriggerType by remember { mutableStateOf<PaywallTriggerType?>(null) }
+	// val offeringsByPlacement by navViewModel.offeringsByPlacement.collectAsStateWithLifecycle()
+	//
+	// val billingState = paywallTriggerType
+	// 	?.let { trigger -> offeringsByPlacement[trigger.placementId] }
+	// 	?: OfferingState.Loading
 
 	// Onboarding disabled — no need to reset stack after first launch
 	// LaunchedEffect(isFirstLaunch) {
@@ -100,20 +100,19 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 	LaunchedEffect(currentScreen) {
 		currentScreen?.let { navViewModel.screen(it.screenName) }
 	}
-	LaunchedEffect(paywallTriggerType) {
-		val trigger = paywallTriggerType ?: return@LaunchedEffect
-		navViewModel.screen("Paywall", mapOf("placement" to trigger.placementId))
-		navViewModel.requestPaywallOffering(trigger)
-	}
-	// When RevenueCat can't serve an offering for the trigger's Placement
-	// close the overlay instead of showing a stuck loader.
-	LaunchedEffect(billingState) {
-		when (billingState) {
-			is OfferingState.Loaded -> if (billingState.offering == null) paywallTriggerType = null
-			OfferingState.Failed -> paywallTriggerType = null
-			OfferingState.Loading -> {}
-		}
-	}
+	// Paywall/RevenueCat disabled in this repo
+	// LaunchedEffect(paywallTriggerType) {
+	// 	val trigger = paywallTriggerType ?: return@LaunchedEffect
+	// 	navViewModel.screen("Paywall", mapOf("placement" to trigger.placementId))
+	// 	navViewModel.requestPaywallOffering(trigger)
+	// }
+	// LaunchedEffect(billingState) {
+	// 	when (billingState) {
+	// 		is OfferingState.Loaded -> if (billingState.offering == null) paywallTriggerType = null
+	// 		OfferingState.Failed -> paywallTriggerType = null
+	// 		OfferingState.Loading -> {}
+	// 	}
+	// }
 	Surface(
 		modifier = Modifier.fillMaxSize(),
 		color = MaterialTheme.colorScheme.background
@@ -162,7 +161,7 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 						SettingsScreen(
 							onNavigateBack = onBack,
 							onShowPaywall = {
-								paywallTriggerType = it
+								// paywallTriggerType = it
 							},
 							onNavigateToCustomerCenter = onOpenCustomerCenter
 						)
@@ -204,7 +203,7 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 						EditAlarmFlowScreen(
 							alarmData = key.alarmData,
 							onCloseFlow = onClose,
-							onShowPaywall = { paywallTriggerType = it },
+							onShowPaywall = { /* paywallTriggerType = it */ },
 							sharedTransitionScope = sharedTransitionScope,
 							animatedVisibilityScope = LocalNavAnimatedContentScope.current
 						)
@@ -215,7 +214,7 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 						val onClose = dropUnlessResumed { popBackStack() }
 						NewAlarmFlowScreen(
 							onCloseFlow = onClose,
-							onShowPaywall = { paywallTriggerType = it }
+							onShowPaywall = { /* paywallTriggerType = it */ }
 						)
 					}
 
@@ -238,52 +237,50 @@ import com.revenuecat.purchases.ui.revenuecatui.customercenter.CustomerCenter
 			)
 		}
 	}
-	AnimatedVisibility(
-		paywallTriggerType != null,
-		enter = slideInVertically(
-			animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-			initialOffsetY = { it }
-		) + fadeIn(
-			animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
-		),
-		exit = slideOutVertically(
-			animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-			targetOffsetY = { it }
-		) + fadeOut(
-			animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
-		)
-	) {
-		when (billingState) {
-			is OfferingState.Loaded -> {
-				val offering = billingState.offering
-				if (offering != null) {
-					PremiumPaywallDialog(
-						isPlus = false,
-						offering = offering,
-						onEvent = navViewModel::onPaywallEvent
-					) {
-						paywallTriggerType = null
-						navViewModel.captureEvent("paywall_dismissed", emptyMap())
-					}
-				} else {
-					// Loaded(null) only survives visually for a frame -
-					// the auto-dismiss effect closes the overlay meanwhile.
-					PaywallLoaderScreen()
-				}
-			}
-			OfferingState.Loading -> PaywallLoaderScreen()
-			OfferingState.Failed -> Unit // overlay closes via the auto-dismiss effect
-		}
-	}
+	// Paywall/RevenueCat disabled in this repo
+	// AnimatedVisibility(
+	// 	paywallTriggerType != null,
+	// 	enter = slideInVertically(
+	// 		animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+	// 		initialOffsetY = { it }
+	// 	) + fadeIn(
+	// 		animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
+	// 	),
+	// 	exit = slideOutVertically(
+	// 		animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+	// 		targetOffsetY = { it }
+	// 	) + fadeOut(
+	// 		animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()
+	// 	)
+	// ) {
+	// 	when (billingState) {
+	// 		is OfferingState.Loaded -> {
+	// 			val offering = billingState.offering
+	// 			if (offering != null) {
+	// 				PremiumPaywallDialog(
+	// 					isPlus = false,
+	// 					offering = offering,
+	// 					onEvent = navViewModel::onPaywallEvent
+	// 				) {
+	// 					paywallTriggerType = null
+	// 					navViewModel.captureEvent("paywall_dismissed", emptyMap())
+	// 				}
+	// 			} else {
+	// 				PaywallLoaderScreen()
+	// 			}
+	// 		}
+	// 		OfferingState.Loading -> PaywallLoaderScreen()
+	// 		OfferingState.Failed -> Unit
+	// 	}
+	// }
 }
 
-/** Full-screen loader shown while RevenueCat resolves the offering for the trigger. */
-@Composable
-private fun PaywallLoaderScreen() {
-	Box(
-		modifier = Modifier.fillMaxSize(),
-		contentAlignment = Alignment.Center
-	) {
-		CircularWavyProgressIndicator()
-	}
-}
+// @Composable
+// private fun PaywallLoaderScreen() {
+// 	Box(
+// 		modifier = Modifier.fillMaxSize(),
+// 		contentAlignment = Alignment.Center
+// 	) {
+// 		CircularWavyProgressIndicator()
+// 	}
+// }

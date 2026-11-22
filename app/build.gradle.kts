@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
 	id("com.google.protobuf") version "0.10.1"
     id("com.google.dagger.hilt.android")
-	id("androidx.room")
+	id("androidx.room3")
 	id("com.google.gms.google-services")
 }
 
@@ -20,9 +20,10 @@ val myAppName="Clock It"
 configureAndroid()
 fun Project.configureAndroid() {
 
-    val revenueCatApiKey = System.getenv("REVENUECAT_API_KEY")
-        ?: project.findProperty("REVENUECAT_API_KEY")?.toString()
-        ?: "test_iTBvEbpLqrrFccKaYXPOWMgAYBI"
+    // RevenueCat disabled in this repo
+    // val revenueCatApiKey = System.getenv("REVENUECAT_API_KEY")
+    //     ?: project.findProperty("REVENUECAT_API_KEY")?.toString()
+    //     ?: "test_iTBvEbpLqrrFccKaYXPOWMgAYBI"
 
     val postHogApiKey = System.getenv("POSTHOG_API_KEY")
         ?: project.findProperty("POSTHOG_API_KEY")?.toString()
@@ -33,10 +34,11 @@ fun Project.configureAndroid() {
 
     androidComponents {
         onVariants { variant ->
-            variant.buildConfigFields?.put(
-                "REVENUECAT_API_KEY",
-                com.android.build.api.variant.BuildConfigField("String", "\"$revenueCatApiKey\"", "")
-            )
+            // RevenueCat disabled in this repo
+            // variant.buildConfigFields?.put(
+            //     "REVENUECAT_API_KEY",
+            //     com.android.build.api.variant.BuildConfigField("String", "\"$revenueCatApiKey\"", "")
+            // )
             if (variant.name == "release") {
                 variant.buildConfigFields?.put(
                     "SKIP_POSTHOG",
@@ -160,7 +162,7 @@ fun Project.configureAndroid() {
     }
 }
 
-room {
+room3 {
 	schemaDirectory("$projectDir/schemas")
 }
 
@@ -261,17 +263,11 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     implementation(libs.kotlinx.coroutines.android)
 
-//	val roomVersion = "3.0.1"
-    val roomVersion = "2.8.4"
-    implementation("androidx.room:room-runtime:$roomVersion")
-//    annotationProcessor("androidx.room:room-compiler:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    implementation("androidx.room:room-rxjava2:$roomVersion")
-    implementation("androidx.room:room-rxjava3:$roomVersion")
-    implementation("androidx.room:room-guava:$roomVersion")
-    testImplementation("androidx.room:room-testing:$roomVersion")
-    implementation("androidx.room:room-paging:$roomVersion")
+    val roomVersion = "3.0.3"
+    implementation("androidx.room3:room3-runtime:$roomVersion")
+    ksp("androidx.room3:room3-compiler:$roomVersion")
+    implementation("androidx.sqlite:sqlite-framework:2.7.1")
+    testImplementation("androidx.room3:room3-testing:$roomVersion")
 	testImplementation("androidx.multidex:multidex:2.0.1")
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.core.ktx)
