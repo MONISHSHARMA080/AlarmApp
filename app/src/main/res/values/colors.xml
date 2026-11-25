@@ -7,12 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="splash_background">#FFFFFFFF</color>
-    <color name="splash_icon_background">#00000000</color>
-    <color name="notification_accent">#FF1C1C1E</color>
-    <color name="splash_clock_rim">#FF212121</color>
-    <color name="splash_clock_face">#FF141414</color>
+    <color name="splash_background">#FFF8F9FF</color>
+    <color name="notification_accent">#FF2355D6</color>
+    <color name="splash_clock_rim">#FF2355D6</color>
+    <color name="splash_clock_face">#FF1C47BA</color>
+    <color name="splash_clock_wedge">#EB6A9BFF</color>
     <color name="splash_clock_hands">#FFFFFFFF</color>
-    <color name="splash_clock_pivot_rim">#FF8E8E93</color>
-    <color name="splash_clock_pivot_core">#FF1C1C1E</color>
+    <color name="splash_clock_pivot">#FFFF6D4D</color>
 </resources>

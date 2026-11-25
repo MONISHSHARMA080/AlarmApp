@@ -186,7 +186,7 @@ jobs:
           POSTHOG_CLI_HOST: https://us.posthog.com
           POSTHOG_CLI_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
           POSTHOG_CLI_API_KEY: ${{ secrets.POSTHOG_CLI_API_KEY }}
-          POSTHOG_RELEASE: "MultipleAlarm_Native@${{ github.sha }}"
+          POSTHOG_RELEASE: "DigitalAlarmClock@${{ github.sha }}"
         run: |
           ./gradlew clean assembleRelease bundleRelease \
             -PversionCode=${{ steps.version.outputs.version_code }} \
@@ -195,25 +195,25 @@ jobs:
       - name: Rename APK
         run: |
           cp app/build/outputs/apk/release/app-release.apk \
-             "Multiple-Alarms-${{ steps.version.outputs.version_name }}.apk"
+             "Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}.apk"
 
       - name: Rename AAB
         run: |
           cp app/build/outputs/bundle/release/app-release.aab \
-             "Multiple-Alarms-${{ steps.version.outputs.version_name }}.aab"
+             "Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}.aab"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Multiple-Alarms-${{ steps.version.outputs.version_name }}-APK
-          path: Multiple-Alarms-${{ steps.version.outputs.version_name }}.apk
+          name: Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}-APK
+          path: Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}.apk
           retention-days: 30
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Multiple-Alarms-${{ steps.version.outputs.version_name }}-AAB
-          path: Multiple-Alarms-${{ steps.version.outputs.version_name }}.aab
+          name: Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}-AAB
+          path: Digital-Alarm-Clock-${{ steps.version.outputs.version_name }}.aab
           retention-days: 30
 
   # ---------------------------------------------------------------------------
@@ -234,7 +234,7 @@ jobs:
       - name: Download APK and AAB
         uses: actions/download-artifact@v4
         with:
-          pattern: Multiple-Alarms-*
+          pattern: Digital-Alarm-Clock-*
           path: dist
           merge-multiple: true
 
@@ -270,8 +270,8 @@ jobs:
             - **APK**: For direct installation on Android devices
             - **AAB**: For Google Play Store distribution
           files: |
-            dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.apk
-            dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.aab
+            dist/Digital-Alarm-Clock-${{ needs.build.outputs.version_name }}.apk
+            dist/Digital-Alarm-Clock-${{ needs.build.outputs.version_name }}.aab
           draft: false
           prerelease: false
         env:
@@ -281,8 +281,8 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.coolApps.MultipleAlarmClock
-          releaseFiles: dist/Multiple-Alarms-${{ needs.build.outputs.version_name }}.aab
+          packageName: com.coolapps.digital.alarm.clock
+          releaseFiles: dist/Digital-Alarm-Clock-${{ needs.build.outputs.version_name }}.aab
           releaseName: ${{ needs.build.outputs.version_name }}
           tracks: internal
           status: completed

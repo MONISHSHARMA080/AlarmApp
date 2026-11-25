@@ -13,7 +13,10 @@ plugins {
 	id("com.google.protobuf") version "0.10.1"
     id("com.google.dagger.hilt.android")
 	id("androidx.room3")
-	id("com.google.gms.google-services")
+}
+
+if (file("google-services.json").exists()) {
+	apply(plugin = "com.google.gms.google-services")
 }
 
 val myAppName="Clock It"
@@ -63,7 +66,7 @@ fun Project.configureAndroid() {
 
     extensions.configure<ApplicationExtension> {
 
-        namespace = "com.coolApps.MultipleAlarmClock"
+        namespace = "com.coolapps.digital.alarm.clock"
         compileSdk {
             version = release(37) {
                 minorApiLevel = 1
@@ -71,7 +74,7 @@ fun Project.configureAndroid() {
         }
 
         defaultConfig {
-            applicationId = "com.coolApps.AlarmClock"
+            applicationId = "com.coolapps.digital.alarm.clock"
             minSdk = 33
             targetSdk = 37
             versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1

@@ -1,4 +1,4 @@
-# Multiple Alarm Clock — agent instructions
+# Digital Alarm Clock — agent instructions
 
 ## Workflow rules
 
@@ -12,7 +12,7 @@
 
 ## Project layout
 
-- Gradle modules: `:app` (the Android app) and `:baselineprofile` (macrobenchmark for baseline profiles). Root Gradle project is named "Trying_native".
+- Gradle modules: `:app` (the Android app) and `:baselineprofile` (macrobenchmark for baseline profiles). Root Gradle project is named "DigitalAlarmClock".
 - `backend/` is a separate Node/TypeScript Firebase Functions project (PostHog-cohort → FCM push cron). It is NOT part of the Gradle build and deploys independently of the app. Details in `backend/architect.md`.
 - Toolchain: AGP 9.3.3, Kotlin 2.4.20, JDK 21, minSdk 33, targetSdk/compileSdk 37 (no instrumentation tests — all tests are Robolectric/JVM).
 
@@ -29,7 +29,7 @@
 
 ## Architecture
 
-- Layers under `app/src/main/java/com/coolApps/MultipleAlarmClock/`: `presentation/` (Compose screens + navigation), `domain/` (use cases, repository interfaces, models), `data/` (Room, DataStore, billing/RevenueCat, background), `di/AppModule.kt` (Hilt).
+- Layers under `app/src/main/java/com/coolapps/digital/alarm/clock/`: `presentation/` (Compose screens + navigation), `domain/` (use cases, repository interfaces, models), `data/` (Room, DataStore, billing/RevenueCat, background), `di/AppModule.kt` (Hilt).
 - Alarm scheduling core lives in `receiver/` (`AlarmReceiver`, `AlarmService`, `BootReceiver`, `ScheduledNotificationReceiver`, FCM service). These are manifest-registered; `BootReceiver` re-schedules alarms after reboot — preserve that when touching scheduling.
 - Both `androidx.navigation` (compose) and the newer `androidx.navigation3` are on the classpath; check which one a screen actually uses before changing navigation.
 

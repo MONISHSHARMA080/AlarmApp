@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-	namespace = "com.coolApps.baselineprofile"
+	namespace = "com.coolapps.digital.alarm.clock.baselineprofile"
 	compileSdk = 37
 
 	compileOptions {

@@ -26,6 +26,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Trying_native"
+rootProject.name = "DigitalAlarmClock"
 include(":app")
 include(":baselineprofile")

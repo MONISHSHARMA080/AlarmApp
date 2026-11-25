@@ -1,0 +1,39 @@
+package com.coolapps.digital.alarm.clock.presentation.picker
+
+import com.coolapps.digital.alarm.clock.data.local.AlarmData
+import com.coolapps.digital.alarm.clock.data.local.AlarmDataValidationResult
+import com.coolapps.digital.alarm.clock.data.paywall.PaywallTriggerType
+import com.coolapps.digital.alarm.clock.presentation.util.permissions.PermissionStep
+import java.time.DayOfWeek
+import java.util.Calendar
+
+enum class Progress{StartTime, FullEditor}
+
+/** [areAllPermissionsGranted] - make sure to set the right value when loading this, as the true is a false value */
+data class AlarmPickerUiState(
+		val alarmData: AlarmData = AlarmData(
+		alarmTime = Calendar.getInstance().apply {
+			add(Calendar.MINUTE, 1)
+			set(Calendar.SECOND, 0)
+			set(Calendar.MILLISECOND, 0)
+		}.timeInMillis,
+		message = "",
+		sound = null,
+		isReadyToUse = true
+	),
+		val validationResult: AlarmDataValidationResult = AlarmDataValidationResult.Success,
+		val isLoading: Boolean = false,
+		val areAllPermissionsGranted: Boolean = false,
+	// if this is null then we are creating a new alarm else if not null then we are editing an existing alarm
+		val initialAlarm: AlarmData? = null,
+		val showPermissionDialog: Boolean = false,
+		val missingSteps: List<PermissionStep> = emptyList(),
+		/** Set when the user hit a paywalled feature; consumed once the paywall is showing. */
+	val paywallTriggerType: PaywallTriggerType? = null,
+		val pendingRepeatDay: DayOfWeek? = null, // remember what the user was trying to do
+		val pendingSound: AlarmSound? = null,
+		val pendingRingDuration: Long? = null,
+		val alarmOperationCompletedGoBack: Boolean = false,
+		val soundSelectionCompletedGoBack: Boolean = false,
+		val progress: Progress = if (initialAlarm == null) Progress.StartTime else Progress.FullEditor
+)

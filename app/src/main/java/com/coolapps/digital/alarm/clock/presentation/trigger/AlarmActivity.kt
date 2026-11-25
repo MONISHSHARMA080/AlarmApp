@@ -1,0 +1,393 @@
+package com.coolapps.digital.alarm.clock.presentation.trigger
+
+import android.content.Intent
+import android.os.Bundle
+import android.os.PowerManager
+import android.view.HapticFeedbackConstants
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.IntentCompat
+import androidx.lifecycle.lifecycleScope
+import com.coolapps.digital.alarm.clock.R
+import com.coolapps.digital.alarm.clock.presentation.ExpressiveAlarmTheme
+import com.coolapps.digital.alarm.clock.presentation.logD
+import com.coolapps.digital.alarm.clock.receiver.AlarmService
+import com.coolapps.digital.alarm.clock.util.Analytics
+import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+@AndroidEntryPoint
+class AlarmActivity : ComponentActivity() {
+    private var wakeLock: PowerManager.WakeLock? = null
+    private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private lateinit var intentReceived: Intent
+    private val DEFAULT_RING_DURATION = 2.minutes
+    private var dismissIntent : Intent? = null
+	private var shouldDismissAlarm = false
+	@Inject lateinit var analytics: Analytics
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+		logD("about to create a new alarm")
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+		this.intentReceived = intent
+        setContent {
+            ExpressiveAlarmTheme {
+                var messageVarToSet by remember { mutableStateOf("") }
+                var intentData by remember { mutableStateOf<AlarmActivityIntentData?>(null)  }
+
+                LaunchedEffect(Unit) {
+                    intentData = this@AlarmActivity.parseTheIntent()
+                    val intentDataAccessed = intentData
+                    logD("the intent data we got from parsing is $intentData")
+                    if (intentDataAccessed !=  null ) {
+                        messageVarToSet = intentDataAccessed.message
+                    }
+                    logD("the message from intent we got is $messageVarToSet ")
+                }
+                LaunchedEffect(Unit) {
+                    if (dismissIntent == null) dismissIntent = makeDismissIntent()
+                }
+                TimeDisplay(
+                    onFinish = { stopAlarmAndFinish() },
+                    message = messageVarToSet
+                )
+            }
+        }
+        lifecycleScope.launch {
+			delay(parseTheIntent()?.ringDurationInMin?.minutes ?: DEFAULT_RING_DURATION)
+			stopAlarmAndFinish()
+		}
+        lifecycleScope.launch(Dispatchers.Main) {keepScreenON()  }
+    }
+
+    /** this  function will get the message form the intent and will set it on the mutable State  that is  passed in */
+    private fun parseTheIntent(): AlarmActivityIntentData?{
+        val parsedIntentData = IntentCompat.getParcelableExtra(intent, "intentData", AlarmActivityIntentData::class.java)
+        logD("the message present in the intent is $parsedIntentData")
+        return parsedIntentData
+    }
+
+    override fun onNewIntent(intent: Intent) {
+		logD("New Intent received in AlarmActivity")
+		super.onNewIntent(intent)
+		setIntent(intent)
+		this.intentReceived = intent
+		dismissIntent = null
+		// release wakelock if needed
+		wakeLock?.let { if (it.isHeld) it.release() }
+		// just finish and restart cleanly
+		finish()
+		startActivity(intent)
+    }
+
+    override fun onDestroy() {
+        runCatching {
+            super.onDestroy()
+            try {
+                wakeLock?.let {
+                    if (it.isHeld) {
+                        it.release()
+                    }
+                }
+            } catch (e: Exception) {
+                logD("Error releasing WakeLock in onDestroy: ${e.message}")
+            }
+            if (shouldDismissAlarm) {
+                dismissTheAlarm()
+            }
+            activityScope.cancel()
+        }.fold(onSuccess = {}, onFailure = {exception ->
+            logD("there is a exception while destroying the AlarmActivity ->  ${exception.message}\n-->$exception")
+        })
+    }
+	private fun makeDismissIntent(): Intent {
+		return Intent(this.intentReceived).apply {
+			action = AlarmService.ACTION_DISMISS_ALARM
+			setClass(this@AlarmActivity, AlarmService::class.java)
+		}
+	}
+    private fun dismissTheAlarm(){
+        if (dismissIntent == null) dismissIntent = makeDismissIntent()
+        startService(dismissIntent)
+    }
+
+	private fun stopAlarmAndFinish() {
+		shouldDismissAlarm = true
+		finishAndRemoveTask()
+	}
+
+    private fun keepScreenON() {
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+        setShowWhenLocked(true)
+        setTurnScreenOn(true)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun TimeDisplay(onFinish: () -> Unit, message: String, modifier: Modifier = Modifier) {
+	val timeFormat = remember { SimpleDateFormat("hh:mm", Locale.getDefault()) }
+	val amPmFormat = remember { SimpleDateFormat("a", Locale.getDefault()) }
+	var currentTime by remember { mutableStateOf(timeFormat.format(Date())) }
+	var amPm by remember { mutableStateOf(amPmFormat.format(Date())) }
+
+	val colorScheme = MaterialTheme.colorScheme
+	val typography = MaterialTheme.typography
+	val view = LocalView.current
+
+	val stopInteractionSource = remember { MutableInteractionSource() }
+	val isStopPressed by stopInteractionSource.collectIsPressedAsState()
+	val stopButtonScale by animateFloatAsState(
+		targetValue = if (isStopPressed) 0.94f else 1f,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopButtonScale"
+	)
+	val stopButtonCorner by animateDpAsState(
+		targetValue = if (isStopPressed) 22.dp else 44.dp,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopButtonCorner"
+	)
+	val stopIconInnerCorner by animateDpAsState(
+		targetValue = if (isStopPressed) 12.dp else 24.dp,
+		animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+		label = "stopIconInnerCorner"
+	)
+
+	LaunchedEffect(Unit) {
+		while (true) {
+			val now = Date()
+			currentTime = timeFormat.format(now)
+			amPm = amPmFormat.format(now)
+			delay(1.seconds)
+		}
+	}
+
+	Scaffold(
+		modifier = Modifier.fillMaxSize(),
+		contentWindowInsets = WindowInsets.safeContent,
+		containerColor = colorScheme.surface,
+		bottomBar = {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.navigationBarsPadding()
+					.padding(horizontal = 16.dp, vertical = 14.dp),
+				contentAlignment = Alignment.Center
+			) {
+				Button(
+					onClick = {
+						view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+						onFinish()
+					},
+					interactionSource = stopInteractionSource,
+					colors = ButtonDefaults.buttonColors(
+						containerColor = colorScheme.primaryContainer,
+						contentColor = colorScheme.onPrimaryContainer
+					),
+					shape = RoundedCornerShape(stopButtonCorner),
+					elevation = ButtonDefaults.buttonElevation(
+						defaultElevation = 0.dp,
+						pressedElevation = 0.dp,
+						focusedElevation = 0.dp,
+						hoveredElevation = 0.dp
+					),
+					modifier = Modifier
+						.scale(stopButtonScale)
+						.height(74.dp)
+						.widthIn(max = 520.dp)
+						.fillMaxWidth(0.94f)
+				) {
+					Surface(
+						shape = RoundedCornerShape(stopIconInnerCorner),
+						color = colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
+						contentColor = colorScheme.onPrimaryContainer,
+						modifier = Modifier.size(48.dp)
+					) {
+						Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+							Icon(
+								imageVector = Icons.Filled.Cancel,
+								modifier = Modifier.size(28.dp),
+								contentDescription = null
+							)
+						}
+					}
+					Spacer(modifier = Modifier.width(8.dp))
+					Text(
+						text = stringResource(R.string.stop_button),
+						style = typography.headlineSmall,
+						fontWeight = FontWeight.Medium
+					)
+				}
+			}
+		}
+	) { innerPadding ->
+		BoxWithConstraints(
+			modifier = modifier
+				.fillMaxSize()
+				.padding(innerPadding)
+				.padding(horizontal = 12.dp),
+			contentAlignment = Alignment.Center
+		) {
+			val isCompactHeight = maxHeight < 460.dp
+			val timeFontSize = minOf(maxWidth.value / 2.9f, maxHeight.value * 0.4f)
+				.coerceIn(56f, 168f).sp
+			val defaultSpatialSpec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
+			val defaultEffectsSpec = MaterialTheme.motionScheme.defaultEffectsSpec<Float>()
+
+			AnimatedContent(
+				targetState = message.isEmpty(),
+				transitionSpec = {
+					(scaleIn(
+						initialScale = 0.95f,
+						animationSpec = defaultSpatialSpec
+					) + fadeIn(
+						animationSpec = defaultEffectsSpec
+					)) togetherWith (scaleOut(
+						targetScale = 0.95f,
+						animationSpec = defaultSpatialSpec
+					) + fadeOut(
+						animationSpec = defaultEffectsSpec
+					))
+				},
+				label = "AlarmHeroContent"
+			) { messageIsEmpty ->
+				Column(
+					modifier = Modifier
+						.fillMaxSize()
+						.widthIn(max = 640.dp)
+						.padding(top = if (isCompactHeight) 12.dp else 28.dp),
+					horizontalAlignment = Alignment.CenterHorizontally,
+					verticalArrangement = if (messageIsEmpty) Arrangement.Center else Arrangement.Top
+				) {
+					Column(horizontalAlignment = Alignment.CenterHorizontally) {
+						Text(
+							text = currentTime,
+							color = colorScheme.onSurface,
+							maxLines = 1,
+							softWrap = false,
+							style = typography.displayLarge.copy(
+								fontSize = timeFontSize,
+								lineHeight = timeFontSize,
+								fontWeight = FontWeight.Normal,
+								letterSpacing = (-2).sp,
+								fontFeatureSettings = "tnum"
+							)
+						)
+						Text(
+							text = amPm,
+							color = colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+							style = typography.headlineMedium,
+							fontWeight = FontWeight.Medium,
+							letterSpacing = 2.sp
+						)
+					}
+
+					if (!messageIsEmpty) {
+						Spacer(modifier = Modifier.height(20.dp))
+						Box(modifier = Modifier.fillMaxSize()) {
+							Column(
+								modifier = Modifier
+									.fillMaxSize()
+									.verticalScroll(rememberScrollState())
+									.padding(vertical = 20.dp),
+								horizontalAlignment = Alignment.CenterHorizontally
+							) {
+								Text(
+									text = message,
+									color = colorScheme.onSurface.copy(alpha = 0.9f),
+									style = typography.headlineSmall,
+									textAlign = TextAlign.Center
+								)
+								Spacer(modifier = Modifier.height(24.dp))
+							}
+							Box(
+								modifier = Modifier
+									.align(Alignment.BottomCenter)
+									.fillMaxWidth()
+									.height(36.dp)
+									.background(
+										brush = Brush.verticalGradient(
+											colors = listOf(Color.Transparent, colorScheme.surface)
+										)
+									)
+							)
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -26,7 +26,7 @@
         android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
         android:exported="true"
-        android:name="com.coolApps.MultipleAlarmClock.AlarmApp"
+        android:name=".AlarmApp"
         android:enableOnBackInvokedCallback="true"
         android:supportsRtl="true"
         >
@@ -47,13 +47,13 @@
         </provider>
 
         <service
-            android:name="com.coolApps.MultipleAlarmClock.receiver.AlarmService"
+            android:name=".receiver.AlarmService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false">
         </service>
 
         <activity
-            android:name="com.coolApps.MultipleAlarmClock.presentation.MainActivity"
+            android:name=".presentation.MainActivity"
             android:theme="@style/Theme.App.Starting"
             android:launchMode="standard"
             android:windowSoftInputMode="adjustResize"
@@ -72,7 +72,7 @@
         </activity>
 
         <receiver
-            android:name="com.coolApps.MultipleAlarmClock.receiver.BootReceiver"
+            android:name=".receiver.BootReceiver"
             android:enabled="true"
             android:exported="false"
             android:directBootAware="false">
@@ -83,9 +83,9 @@
         </receiver>
 
         <activity
-            android:name="com.coolApps.MultipleAlarmClock.presentation.trigger.AlarmActivity"
+            android:name=".presentation.trigger.AlarmActivity"
             android:launchMode="singleInstance"
-            android:theme="@style/Theme.Trying_native.Fullscreen"
+            android:theme="@style/Theme.DigitalAlarmClock.Fullscreen"
             android:showOnLockScreen="true"
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
@@ -93,13 +93,13 @@
 
         
         <receiver
-            android:name="com.coolApps.MultipleAlarmClock.receiver.AlarmReceiver"
+            android:name=".receiver.AlarmReceiver"
             android:exported="false" >
             
         </receiver>
 
         <receiver
-            android:name="com.coolApps.MultipleAlarmClock.receiver.AlarmInfoNotification"
+            android:name=".receiver.AlarmInfoNotification"
             android:exported="false" >
         </receiver>
 
@@ -109,11 +109,11 @@
 
         
         <receiver
-            android:name="com.coolApps.MultipleAlarmClock.receiver.ScheduledNotificationReceiver"
+            android:name=".receiver.ScheduledNotificationReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.coolApps.AlarmClock.ACTION_SHOW_OFFLINE_NOTIFICATION" />
-                <action android:name="com.coolApps.AlarmClock.ACTION_TRIAL_REMINDER" />
+                <action android:name="com.coolapps.digital.alarm.clock.ACTION_SHOW_OFFLINE_NOTIFICATION" />
+                <action android:name="com.coolapps.digital.alarm.clock.ACTION_TRIAL_REMINDER" />
             </intent-filter>
         </receiver>
 
