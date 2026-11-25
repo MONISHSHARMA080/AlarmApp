@@ -19,7 +19,6 @@ if (file("google-services.json").exists()) {
 	apply(plugin = "com.google.gms.google-services")
 }
 
-val myAppName="Clock It"
 configureAndroid()
 fun Project.configureAndroid() {
 
@@ -109,7 +108,6 @@ fun Project.configureAndroid() {
 
 		buildTypes {
             release {
-                resValue("string", "app_name", myAppName)
                 isShrinkResources = true
                 isMinifyEnabled = true
                 proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -120,7 +118,6 @@ fun Project.configureAndroid() {
                 }
             }
             debug {
-				resValue("string", "app_name", myAppName)
             }
         }
 
