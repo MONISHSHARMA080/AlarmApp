@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203283991561",
+    "project_id": "alarm-app-d2567",
+    "storage_bucket": "alarm-app-d2567.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203283991561:android:c9edebd0f9db2d3dd0fcd8",
+        "android_client_info": {
+          "package_name": "com.coolapps.digital.alarm.clock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVqtLBEGMfZKR9I5NT_yLgezFWFjHL3sA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

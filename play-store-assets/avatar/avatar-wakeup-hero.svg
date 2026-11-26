@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 420" width="440" height="420">
+  <defs>
+    <radialGradient id="sunGlow" cx="50%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#FFE494" stop-opacity="0.88"/>
+      <stop offset="65%" stop-color="#FFF5D6" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sweaterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3568F2"/>
+      <stop offset="100%" stop-color="#1D47BA"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6BA"/>
+      <stop offset="100%" stop-color="#F6B891"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Soft golden morning aura -->
+  <circle cx="220" cy="204" r="180" fill="url(#sunGlow)"/>
+
+  <!-- Morning sun rays (well clear of hands!) -->
+  <g stroke="#FFB703" stroke-width="6.5" stroke-linecap="round">
+    <line x1="220" y1="22" x2="220" y2="48"/>
+    <line x1="126" y1="52" x2="140" y2="72"/>
+    <line x1="314" y1="52" x2="300" y2="72"/>
+    <line x1="38" y1="196" x2="64" y2="196"/>
+    <line x1="376" y1="196" x2="402" y2="196"/>
+  </g>
+
+  <!-- Sparkle accents placed cleanly in negative space, well away from fists -->
+  <path d="M58,104 L63,90 L68,104 L82,109 L68,114 L63,128 L58,114 L44,109 Z" fill="#FF6D4D"/>
+  <path d="M378,100 L382,88 L386,100 L398,104 L386,108 L382,120 L378,108 L366,104 Z" fill="#2355D6"/>
+  <circle cx="386" cy="264" r="6.5" fill="#FFB703"/>
+  <circle cx="56" cy="264" r="6" fill="#6A9BFF"/>
+
+  <!-- Left raised arm (smooth seamless shoulder join + cuff + hand with thumb) -->
+  <path d="M174,306 C122,286 94,238 106,162 L134,166 C128,218 148,254 188,274 Z" fill="#2355D6"/>
+  <!-- Left sleeve cuff -->
+  <rect x="103" y="158" width="34" height="12" rx="6" transform="rotate(6 120 164)" fill="#D8E2FF"/>
+  <!-- Left hand + thumb -->
+  <circle cx="121" cy="144" r="17" fill="url(#skinGrad)"/>
+  <ellipse cx="137" cy="148" rx="7" ry="10" transform="rotate(24 137 148)" fill="#F6B891"/>
+
+  <!-- Right raised arm (smooth seamless shoulder join + cuff + hand with thumb) -->
+  <path d="M266,306 C318,286 346,238 334,162 L306,166 C312,218 292,254 252,274 Z" fill="#2355D6"/>
+  <!-- Right sleeve cuff -->
+  <rect x="303" y="158" width="34" height="12" rx="6" transform="rotate(-6 320 164)" fill="#D8E2FF"/>
+  <!-- Right hand + thumb -->
+  <circle cx="319" cy="144" r="17" fill="url(#skinGrad)"/>
+  <ellipse cx="303" cy="148" rx="7" ry="10" transform="rotate(-24 303 148)" fill="#F6B891"/>
+
+  <!-- Shoulders / pajama top -->
+  <path d="M138,358 C138,286 170,262 220,262 C270,262 302,286 302,358 Z" fill="url(#sweaterGrad)"/>
+  <path d="M190,265 Q220,294 250,265" fill="none" stroke="#D8E2FF" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Neck -->
+  <rect x="205" y="240" width="30" height="32" rx="12" fill="#E8A47C"/>
+
+  <!-- Ears -->
+  <circle cx="154" cy="192" r="15" fill="#F6B891"/>
+  <circle cx="154" cy="192" r="7" fill="#E49B74"/>
+  <circle cx="286" cy="192" r="15" fill="#F6B891"/>
+  <circle cx="286" cy="192" r="7" fill="#E49B74"/>
+
+  <!-- Head -->
+  <circle cx="220" cy="186" r="67" fill="url(#skinGrad)"/>
+
+  <!-- Hair with highlight & cowlick -->
+  <path d="M152,182 C150,126 184,102 224,104 C268,106 292,136 288,182 C274,154 254,146 224,146 C194,146 170,156 152,182 Z" fill="#171E2E"/>
+  <path d="M178,130 Q214,112 252,130" fill="none" stroke="#2D3B59" stroke-width="6" stroke-linecap="round"/>
+  <path d="M206,110 C198,86 226,82 234,106 C244,88 266,96 254,116" fill="#171E2E"/>
+
+  <!-- Rosy cheeks -->
+  <ellipse cx="178" cy="204" rx="12" ry="7" fill="#FF7F6B" opacity="0.45"/>
+  <ellipse cx="262" cy="204" rx="12" ry="7" fill="#FF7F6B" opacity="0.45"/>
+
+  <!-- Bright wide-awake eyes -->
+  <circle cx="195" cy="186" r="9.5" fill="#171E2E"/>
+  <circle cx="198.5" cy="182.5" r="3.2" fill="#FFFFFF"/>
+  <circle cx="245" cy="186" r="9.5" fill="#171E2E"/>
+  <circle cx="248.5" cy="182.5" r="3.2" fill="#FFFFFF"/>
+
+  <!-- Happy lifted brows -->
+  <path d="M180,166 Q195,156 208,165" fill="none" stroke="#171E2E" stroke-width="4.2" stroke-linecap="round"/>
+  <path d="M232,165 Q245,156 260,166" fill="none" stroke="#171E2E" stroke-width="4.2" stroke-linecap="round"/>
+
+  <!-- Small nose -->
+  <path d="M218,192 Q222,199 217,202" fill="none" stroke="#D9936E" stroke-width="3.2" stroke-linecap="round"/>
+
+  <!-- Big triumphant open smile -->
+  <path d="M194,212 Q220,242 246,212 Z" fill="#171E2E"/>
+  <path d="M199,214 L241,214 Q236,221 220,221 Q204,221 199,214 Z" fill="#FFFFFF"/>
+  <path d="M207,227 Q220,235 233,227" fill="#FF6D4D"/>
+
+  <!-- Cozy foreground duvet -->
+  <path d="M100,342 Q220,320 340,342 L350,392 Q220,404 90,392 Z" fill="#D8E2FF"/>
+  <path d="M100,342 Q220,320 340,342 L344,362 Q220,342 96,362 Z" fill="#EEF3FF"/>
+</svg>

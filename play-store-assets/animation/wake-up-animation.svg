@@ -1,0 +1,352 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720">
+  <defs>
+    <style>
+      .sans {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+
+      @keyframes sunBurst {
+        0%, 52% { opacity: 0; transform: scale(0.45) rotate(-18deg); }
+        62%, 88% { opacity: 1; transform: scale(1) rotate(0deg); }
+        95%, 100% { opacity: 0; transform: scale(0.85) rotate(10deg); }
+      }
+
+      @keyframes zzzFloat1 {
+        0% { opacity: 0; transform: translate(0, 12px) scale(0.7); }
+        12%, 22% { opacity: 1; transform: translate(8px, -12px) scale(1); }
+        30%, 100% { opacity: 0; transform: translate(18px, -34px) scale(1.1); }
+      }
+      @keyframes zzzFloat2 {
+        0%, 8% { opacity: 0; transform: translate(0, 14px) scale(0.7); }
+        18%, 26% { opacity: 0.9; transform: translate(10px, -16px) scale(1); }
+        34%, 100% { opacity: 0; transform: translate(22px, -40px) scale(1.15); }
+      }
+
+      @keyframes clockRing {
+        0%, 22% { transform: rotate(0deg) scale(1); }
+        25% { transform: rotate(-14deg) scale(1.08); }
+        28% { transform: rotate(14deg) scale(1.1); }
+        31% { transform: rotate(-13deg) scale(1.08); }
+        34% { transform: rotate(13deg) scale(1.1); }
+        37% { transform: rotate(-12deg) scale(1.08); }
+        40% { transform: rotate(12deg) scale(1.1); }
+        43% { transform: rotate(-10deg) scale(1.06); }
+        46% { transform: rotate(10deg) scale(1.06); }
+        50% { transform: rotate(-8deg) scale(1.04); }
+        54%, 100% { transform: rotate(0deg) scale(1); }
+      }
+
+      @keyframes soundWave1 {
+        0%, 23% { opacity: 0; transform: scale(0.7); }
+        28%, 50% { opacity: 1; transform: scale(1.06); }
+        56%, 100% { opacity: 0; transform: scale(1.25); }
+      }
+      @keyframes soundWave2 {
+        0%, 27% { opacity: 0; transform: scale(0.75); }
+        34%, 52% { opacity: 0.75; transform: scale(1.15); }
+        58%, 100% { opacity: 0; transform: scale(1.35); }
+      }
+
+      /* Badges cleanly staggered: 6:00 & 6:05 during ringing, 6:10 UP right on wake-up! */
+      @keyframes badgePop1 {
+        0%, 22% { opacity: 0; transform: translateY(14px) scale(0.88); }
+        27%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+        95%, 100% { opacity: 0; transform: translateY(-6px) scale(0.95); }
+      }
+      @keyframes badgePop2 {
+        0%, 35% { opacity: 0; transform: translateY(14px) scale(0.88); }
+        40%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+        95%, 100% { opacity: 0; transform: translateY(-6px) scale(0.95); }
+      }
+      @keyframes badgePop3 {
+        0%, 51% { opacity: 0; transform: translateY(14px) scale(0.88); }
+        56%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+        95%, 100% { opacity: 0; transform: translateY(-6px) scale(0.95); }
+      }
+
+      @keyframes avatarBodyBounce {
+        0%, 26% { transform: translateY(16px); }
+        34% { transform: translateY(12px) rotate(-1.5deg); }
+        42% { transform: translateY(12px) rotate(1.5deg); }
+        49% { transform: translateY(10px) rotate(0deg); }
+        56% { transform: translateY(-20px) rotate(0deg); }
+        61%, 88% { transform: translateY(-10px) rotate(0deg); }
+        96%, 100% { transform: translateY(16px) rotate(0deg); }
+      }
+
+      @keyframes sleepyFace {
+        0%, 26% { opacity: 1; }
+        28%, 95% { opacity: 0; }
+        97%, 100% { opacity: 1; }
+      }
+      @keyframes stirringFace {
+        0%, 26% { opacity: 0; }
+        28%, 51% { opacity: 1; }
+        53%, 100% { opacity: 0; }
+      }
+      @keyframes awakeFace {
+        0%, 51% { opacity: 0; }
+        54%, 92% { opacity: 1; }
+        96%, 100% { opacity: 0; }
+      }
+
+      @keyframes armsSleep {
+        0%, 50% { opacity: 1; }
+        53%, 93% { opacity: 0; }
+        97%, 100% { opacity: 1; }
+      }
+      @keyframes armsUp {
+        0%, 51% { opacity: 0; transform: translateY(26px) scale(0.85); }
+        58%, 90% { opacity: 1; transform: translateY(0) scale(1); }
+        96%, 100% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      }
+
+      @keyframes sparklePop {
+        0%, 55% { opacity: 0; transform: scale(0.2) rotate(-20deg); }
+        63%, 86% { opacity: 1; transform: scale(1) rotate(0deg); }
+        94%, 100% { opacity: 0; transform: scale(0.3) rotate(20deg); }
+      }
+
+      @keyframes statusSleep {
+        0%, 22% { opacity: 1; transform: translateY(0); }
+        26%, 95% { opacity: 0; transform: translateY(-8px); }
+        98%, 100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes statusRing {
+        0%, 23% { opacity: 0; transform: translateY(8px); }
+        27%, 50% { opacity: 1; transform: translateY(0); }
+        54%, 100% { opacity: 0; transform: translateY(-8px); }
+      }
+      @keyframes statusAwake {
+        0%, 52% { opacity: 0; transform: translateY(8px); }
+        57%, 91% { opacity: 1; transform: translateY(0); }
+        96%, 100% { opacity: 0; transform: translateY(-8px); }
+      }
+
+      /* Animated phase indicator pills */
+      @keyframes dot1 { 0%, 25%, 96%, 100% { fill: #2355D6; } 26%, 95% { fill: #D8E2FF; } }
+      @keyframes dot2 { 0%, 25% { fill: #D8E2FF; } 26%, 52% { fill: #2355D6; } 53%, 100% { fill: #D8E2FF; } }
+      @keyframes dot3 { 0%, 52% { fill: #D8E2FF; } 53%, 95% { fill: #2355D6; } 96%, 100% { fill: #D8E2FF; } }
+
+      .sun-burst { transform-origin: 392px 350px; animation: sunBurst 6s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+      .zzz1 { transform-origin: 478px 255px; animation: zzzFloat1 6s ease-in-out infinite; }
+      .zzz2 { transform-origin: 512px 215px; animation: zzzFloat2 6s ease-in-out infinite; }
+      .clock-group { transform-origin: 590px 236px; animation: clockRing 6s ease-in-out infinite; }
+      .wave1 { transform-origin: 590px 236px; animation: soundWave1 6s ease-out infinite; }
+      .wave2 { transform-origin: 590px 236px; animation: soundWave2 6s ease-out infinite; }
+      .badge1 { transform-origin: 112px 206px; animation: badgePop1 6s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+      .badge2 { transform-origin: 112px 268px; animation: badgePop2 6s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+      .badge3 { transform-origin: 112px 330px; animation: badgePop3 6s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+      .avatar-body { transform-origin: 392px 420px; animation: avatarBodyBounce 6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+      .face-sleep { animation: sleepyFace 6s linear infinite; }
+      .face-stir { animation: stirringFace 6s linear infinite; }
+      .face-awake { animation: awakeFace 6s linear infinite; }
+      .arms-sleep { animation: armsSleep 6s linear infinite; }
+      .arms-up { transform-origin: 392px 410px; animation: armsUp 6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+      .sparkle { transform-origin: 392px 300px; animation: sparklePop 6s cubic-bezier(0.22, 1, 0.36, 1) infinite; }
+      .st-sleep { animation: statusSleep 6s ease-in-out infinite; }
+      .st-ring { animation: statusRing 6s ease-in-out infinite; }
+      .st-awake { animation: statusAwake 6s ease-in-out infinite; }
+      .p-dot1 { animation: dot1 6s linear infinite; }
+      .p-dot2 { animation: dot2 6s linear infinite; }
+      .p-dot3 { animation: dot3 6s linear infinite; }
+    </style>
+
+    <filter id="cardShadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0B1633" flood-opacity="0.09"/>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#2355D6" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Crisp pure white canvas -->
+  <rect width="720" height="720" rx="36" fill="#FFFFFF"/>
+
+  <!-- Top Clock-It repeat alarm header pill -->
+  <g filter="url(#cardShadow)">
+    <rect x="135" y="34" width="450" height="76" rx="38" fill="#F4F7FF" stroke="#D8E2FF" stroke-width="2"/>
+    <g transform="translate(154, 48) scale(0.45)">
+      <circle cx="54" cy="54" r="44" fill="#2355D6"/>
+      <circle cx="54" cy="54" r="32" fill="#1C47BA"/>
+      <path d="M54,54 L54,22 A32,32 0 0,1 83.2,40.9 Z" fill="#6A9BFF" fill-opacity="0.92"/>
+      <path d="M54,54 L36,43" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+      <path d="M54,54 L75,38" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="54" cy="54" r="5.5" fill="#FF6D4D"/>
+    </g>
+    <text x="218" y="68" class="sans" font-size="22" font-weight="800" fill="#0B0F19">6:00 → 6:30 AM</text>
+    <text x="218" y="93" class="sans" font-size="14" font-weight="600" fill="#54617A">Every 5 min · 7 repeating alarms</text>
+    <rect x="506" y="56" width="58" height="32" rx="16" fill="#2355D6"/>
+    <circle cx="548" cy="72" r="11" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Morning sun-burst centered cleanly behind avatar (shifted slightly right so left badges never collide!) -->
+  <g class="sun-burst">
+    <circle cx="392" cy="355" r="144" fill="#FFF7E0"/>
+    <circle cx="392" cy="355" r="110" fill="#FFECC0"/>
+    <g stroke="#FFB703" stroke-width="6" stroke-linecap="round">
+      <line x1="392" y1="184" x2="392" y2="208"/>
+      <line x1="278" y1="234" x2="296" y2="252"/>
+      <line x1="506" y1="234" x2="488" y2="252"/>
+      <line x1="240" y1="340" x2="262" y2="340"/>
+      <line x1="544" y1="340" x2="522" y2="340"/>
+    </g>
+  </g>
+
+  <!-- Floating Zzz during sleep phase -->
+  <g class="zzz1">
+    <text x="470" y="258" class="sans" font-size="36" font-weight="900" fill="#2355D6">Z</text>
+  </g>
+  <g class="zzz2">
+    <text x="504" y="220" class="sans" font-size="26" font-weight="900" fill="#6A9BFF">z</text>
+  </g>
+
+  <!-- Left cascading repeat alarm badges — zero overlap with raised left arm! -->
+  <g class="badge1" filter="url(#cardShadow)">
+    <rect x="26" y="182" width="182" height="48" rx="24" fill="#FFFFFF" stroke="#D8E2FF" stroke-width="2"/>
+    <circle cx="52" cy="206" r="10" fill="#2355D6"/>
+    <path d="M52,201 L52,206 L56,208" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>
+    <text x="72" y="212" class="sans" font-size="15.5" font-weight="800" fill="#0B0F19">6:00 AM · Ring!</text>
+  </g>
+  <g class="badge2" filter="url(#cardShadow)">
+    <rect x="26" y="244" width="190" height="48" rx="24" fill="#FFFFFF" stroke="#B6C8FF" stroke-width="2"/>
+    <circle cx="52" cy="268" r="10" fill="#2355D6"/>
+    <path d="M52,263 L52,268 L56,270" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>
+    <text x="72" y="274" class="sans" font-size="15.5" font-weight="800" fill="#0B0F19">6:05 AM · Again!</text>
+  </g>
+  <g class="badge3" filter="url(#cardShadow)">
+    <rect x="26" y="306" width="182" height="48" rx="24" fill="#2355D6"/>
+    <circle cx="52" cy="330" r="10" fill="#FF6D4D"/>
+    <text x="72" y="336" class="sans" font-size="15.5" font-weight="800" fill="#FFFFFF">6:10 AM · UP!</text>
+  </g>
+
+  <!-- Right ringing Clock-It clock + sound waves -->
+  <g class="wave2">
+    <path d="M528,188 A82,82 0 0,0 528,284" fill="none" stroke="#FF6D4D" stroke-width="5" stroke-linecap="round"/>
+    <path d="M652,188 A82,82 0 0,1 652,284" fill="none" stroke="#FF6D4D" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g class="wave1">
+    <path d="M542,202 A64,64 0 0,0 542,270" fill="none" stroke="#2355D6" stroke-width="5" stroke-linecap="round"/>
+    <path d="M638,202 A64,64 0 0,1 638,270" fill="none" stroke="#2355D6" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g class="clock-group" filter="url(#softShadow)">
+    <circle cx="556" cy="198" r="14" fill="#1C47BA"/>
+    <circle cx="624" cy="198" r="14" fill="#1C47BA"/>
+    <line x1="564" y1="273" x2="553" y2="286" stroke="#1C47BA" stroke-width="7.5" stroke-linecap="round"/>
+    <line x1="616" y1="273" x2="627" y2="286" stroke="#1C47BA" stroke-width="7.5" stroke-linecap="round"/>
+    <circle cx="590" cy="236" r="44" fill="#2355D6"/>
+    <circle cx="590" cy="236" r="32.5" fill="#1C47BA"/>
+    <path d="M590,236 L590,203.5 A32.5,32.5 0 0,1 619.5,222.5 Z" fill="#6A9BFF" fill-opacity="0.922"/>
+    <path d="M590,236 L572,225" fill="none" stroke="#FFFFFF" stroke-width="6.8" stroke-linecap="round"/>
+    <path d="M590,236 L611,220" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="590" cy="236" r="5.5" fill="#FF6D4D"/>
+  </g>
+
+  <!-- Bed headboard & pillow backdrop (centered at x=392) -->
+  <rect x="242" y="370" width="300" height="145" rx="28" fill="#EEF3FF"/>
+  <rect x="274" y="388" width="236" height="74" rx="34" fill="#FFFFFF" stroke="#D8E2FF" stroke-width="3"/>
+
+  <!-- Animated Avatar (centered at x=392) -->
+  <g class="avatar-body">
+    <!-- Sculpted arms raised celebrating (zero badge overlap: left hand x=284, badge right edge x=216!) -->
+    <g class="arms-up">
+      <path d="M332,424 C296,406 270,362 280,300 L306,304 C300,348 314,376 344,394 Z" fill="#FFB703"/>
+      <circle cx="294" cy="292" r="16" fill="#FFCCA8"/>
+      <path d="M452,424 C488,406 514,362 504,300 L478,304 C484,348 470,376 440,394 Z" fill="#FFB703"/>
+      <circle cx="490" cy="292" r="16" fill="#FFCCA8"/>
+    </g>
+
+    <!-- Torso -->
+    <path d="M314,470 C314,408 346,388 392,388 C438,388 470,408 470,470 Z" fill="#FFB703"/>
+    <path d="M368,390 Q392,414 416,390" fill="none" stroke="#E09B00" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Neck -->
+    <rect x="377" y="366" width="30" height="30" rx="12" fill="#F2B892"/>
+
+    <!-- Ears -->
+    <circle cx="326" cy="316" r="14.5" fill="#FFCCA8"/>
+    <circle cx="458" cy="316" r="14.5" fill="#FFCCA8"/>
+
+    <!-- Head -->
+    <circle cx="392" cy="312" r="66" fill="#FFCCA8"/>
+
+    <!-- Hair -->
+    <path d="M324,308 C322,256 356,234 396,236 C438,238 464,264 460,308 C446,282 424,274 396,274 C366,274 344,282 324,308 Z" fill="#182032"/>
+    <path d="M380,242 C372,220 398,216 406,238 C414,222 434,228 426,246" fill="#182032"/>
+
+    <!-- Rosy cheeks -->
+    <ellipse cx="352" cy="330" rx="11" ry="6.5" fill="#FF8C7A" opacity="0.5"/>
+    <ellipse cx="432" cy="330" rx="11" ry="6.5" fill="#FF8C7A" opacity="0.5"/>
+
+    <!-- PHASE 1: SLEEPING FACE -->
+    <g class="face-sleep">
+      <path d="M356,314 Q368,324 380,314" fill="none" stroke="#182032" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M404,314 Q416,324 428,314" fill="none" stroke="#182032" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M356,298 Q368,294 378,298" fill="none" stroke="#182032" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M406,298 Q416,294 428,298" fill="none" stroke="#182032" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="392" cy="346" rx="7" ry="8" fill="#C9645B"/>
+    </g>
+
+    <!-- PHASE 2: STIRRING / WAKING FACE (reacting to repeating rings!) -->
+    <g class="face-stir">
+      <!-- Squinting waking eyes -->
+      <path d="M356,310 L376,316 L356,322" fill="none" stroke="#182032" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M428,310 L408,316 L428,322" fill="none" stroke="#182032" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M356,294 L378,300" stroke="#182032" stroke-width="4" stroke-linecap="round"/>
+      <path d="M428,294 L406,300" stroke="#182032" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="392" cy="344" rx="10" ry="7" fill="#C9645B"/>
+    </g>
+
+    <!-- PHASE 3: AWAKE ENERGIZED FACE -->
+    <g class="face-awake">
+      <circle cx="366" cy="312" r="9.5" fill="#182032"/>
+      <circle cx="369.5" cy="308.5" r="3.2" fill="#FFFFFF"/>
+      <circle cx="418" cy="312" r="9.5" fill="#182032"/>
+      <circle cx="421.5" cy="308.5" r="3.2" fill="#FFFFFF"/>
+      <path d="M352,293 Q366,284 379,292" fill="none" stroke="#182032" stroke-width="4" stroke-linecap="round"/>
+      <path d="M405,292 Q418,284 432,293" fill="none" stroke="#182032" stroke-width="4" stroke-linecap="round"/>
+      <path d="M369,338 Q392,364 415,338 Z" fill="#182032"/>
+      <path d="M374,340 L410,340 Q406,346 392,346 Q378,346 374,340 Z" fill="#FFFFFF"/>
+      <path d="M380,351 Q392,358 404,351" fill="#FF6D4D"/>
+    </g>
+
+    <!-- Resting arms on blanket (sleep/stir phase) -->
+    <g class="arms-sleep">
+      <ellipse cx="348" cy="452" rx="22" ry="15" fill="#FFCCA8"/>
+      <ellipse cx="436" cy="452" rx="22" ry="15" fill="#FFCCA8"/>
+    </g>
+  </g>
+
+  <!-- Cozy Periwinkle Duvet Blanket Foreground -->
+  <path d="M222,458 Q392,434 562,458 L574,526 Q392,540 210,526 Z" fill="#2355D6"/>
+  <path d="M224,458 Q392,434 560,458 L564,482 Q392,460 220,482 Z" fill="#D8E2FF"/>
+
+  <!-- Celebratory sparkles clear of hands and sun rays -->
+  <g class="sparkle">
+    <path d="M248,196 L253,182 L258,196 L272,201 L258,206 L253,220 L248,206 L234,201 Z" fill="#FF6D4D"/>
+    <path d="M500,192 L504,180 L508,192 L520,196 L508,200 L504,212 L500,200 L488,196 Z" fill="#2355D6"/>
+    <circle cx="538" cy="376" r="6.5" fill="#FFB703"/>
+    <circle cx="242" cy="376" r="6" fill="#6A9BFF"/>
+  </g>
+
+  <!-- Dynamic Bottom Copy (Bold black text on crisp white!) -->
+  <g class="st-sleep">
+    <text x="360" y="598" text-anchor="middle" class="sans" font-size="44" font-weight="900" letter-spacing="-1" fill="#0B0F19">Sleep through 1 alarm?</text>
+    <text x="360" y="638" text-anchor="middle" class="sans" font-size="22" font-weight="600" fill="#5A6478">Heavy sleepers snooze without waking up</text>
+  </g>
+  <g class="st-ring">
+    <text x="360" y="598" text-anchor="middle" class="sans" font-size="44" font-weight="900" letter-spacing="-1" fill="#0B0F19">Rings every <tspan fill="#2355D6">5 minutes</tspan></text>
+    <text x="360" y="638" text-anchor="middle" class="sans" font-size="22" font-weight="600" fill="#5A6478">One setup · non-stop repeating alarms</text>
+  </g>
+  <g class="st-awake">
+    <text x="360" y="598" text-anchor="middle" class="sans" font-size="48" font-weight="900" letter-spacing="-1.2" fill="#0B0F19">You’ll wake up. <tspan fill="#2355D6">Always.</tspan></text>
+    <text x="360" y="638" text-anchor="middle" class="sans" font-size="22" font-weight="600" fill="#5A6478">Clock-It · Repeat Alarm for Heavy Sleepers</text>
+  </g>
+
+  <!-- Animated phase progress dots -->
+  <g transform="translate(328, 676)">
+    <rect class="p-dot1" x="0" y="0" width="18" height="7" rx="3.5" fill="#2355D6"/>
+    <rect class="p-dot2" x="24" y="0" width="18" height="7" rx="3.5" fill="#D8E2FF"/>
+    <rect class="p-dot3" x="48" y="0" width="18" height="7" rx="3.5" fill="#D8E2FF"/>
+  </g>
+</svg>

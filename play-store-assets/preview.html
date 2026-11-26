@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Clock-It — Play Store Assets Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #F4F6FA;
+      color: #0B0F19;
+      padding: 40px 32px 80px;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1360px; margin: 0 auto; }
+    h1 { font-size: 36px; font-weight: 900; letter-spacing: -0.03em; }
+    .lead { color: #54617A; margin-top: 6px; font-size: 16px; }
+    section { margin-top: 48px; }
+    h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill {
+      font-size: 12px;
+      font-weight: 700;
+      background: #E8EEFF;
+      color: #2355D6;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    /* Icons grid */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(11, 22, 51, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .icon-preview {
+      width: 136px;
+      height: 136px;
+      border-radius: 30px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(35, 85, 214, 0.16);
+      margin-bottom: 14px;
+    }
+    .icon-preview.checker {
+      background-image: linear-gradient(45deg, #eef1f6 25%, transparent 25%),
+        linear-gradient(-45deg, #eef1f6 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eef1f6 75%),
+        linear-gradient(-45deg, transparent 75%, #eef1f6 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+    .icon-preview img { width: 100%; height: 100%; display: block; object-fit: contain; }
+    .card-title { font-weight: 800; font-size: 15px; }
+    .card-meta { color: #64748B; font-size: 13px; margin-top: 3px; }
+
+    /* Animation & Avatars */
+    .media-row {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 960px) { .media-row { grid-template-columns: 1fr; } }
+    .media-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 6px 20px rgba(11, 22, 51, 0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .media-box object, .media-box img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 16px;
+      display: block;
+    }
+    .media-box .label {
+      margin-top: 14px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .media-box .sub {
+      color: #64748B;
+      font-size: 13px;
+      margin-top: 2px;
+      text-align: center;
+    }
+
+    /* Play Store Thumbnail Squint Test Strip (~160px wide) */
+    .thumb-strip {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 18px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+    }
+    .thumb-strip img {
+      width: 164px;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid #E5E9F2;
+      box-shadow: 0 4px 12px rgba(11, 22, 51, 0.08);
+      flex-shrink: 0;
+    }
+
+    /* Full Screenshot Grid */
+    .shot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 24px;
+    }
+    .shot-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 22px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(11, 22, 51, 0.06);
+    }
+    .shot-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid #EDF1F7;
+      display: block;
+    }
+    .shot-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 6px 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+    }
+    .shot-meta span:last-child { color: #64748B; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Repeat Alarm: Clock-It — Play Store Assets</h1>
+    <p class="lead">Splash-matched App Icons (SVG + 512×512 PNG), Wake-Up Avatar Animation (SVG + GIF + MP4), and 6 Alarmy-inspired White/Black Play Store Screenshots (1080×1920).</p>
+
+    <section>
+      <h2>App Icons <span class="pill">Matches ic_splash_logo.xml</span></h2>
+      <div class="icon-grid">
+        <div class="card">
+          <div class="icon-preview"><img src="icon/app-icon-512.png" alt="App Icon"/></div>
+          <div class="card-title">Play Store Icon (Adaptive BG)</div>
+          <div class="card-meta">icon/app-icon-512.png &amp; .svg (#D8E2FF)</div>
+        </div>
+        <div class="card">
+          <div class="icon-preview"><img src="icon/app-icon-splash-512.png" alt="Splash Icon"/></div>
+          <div class="card-title">Play Store Icon (Splash BG)</div>
+          <div class="card-meta">icon/app-icon-splash-512.png &amp; .svg (#F8F9FF)</div>
+        </div>
+        <div class="card">
+          <div class="icon-preview checker"><img src="icon/app-icon-transparent-512.png" alt="Transparent Mark"/></div>
+          <div class="card-title">Transparent Clock Mark</div>
+          <div class="card-meta">icon/app-icon-transparent-512.png &amp; .svg</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Wake-Up Avatar Animation &amp; Character Art <span class="pill">6s Seamless Loop</span></h2>
+      <div class="media-row">
+        <div class="media-box">
+          <object data="animation/wake-up-animation.svg" type="image/svg+xml" width="420" height="420" aria-label="Wake-up animation"></object>
+          <div class="label">Looping Wake-Up Animation</div>
+          <div class="sub">animation/wake-up-animation.svg · .gif · .mp4</div>
+        </div>
+        <div class="media-box">
+          <img src="avatar/avatar-wakeup-hero.png" alt="Awake Hero Avatar" style="max-height:340px;"/>
+          <div class="label">Wide Awake Hero Avatar</div>
+          <div class="sub">avatar/avatar-wakeup-hero.svg &amp; .png</div>
+        </div>
+        <div class="media-box">
+          <img src="avatar/avatar-loud-alarm.png" alt="Loud Alarm Avatar" style="max-height:340px;"/>
+          <div class="label">Loud Alarm Startled Avatar</div>
+          <div class="sub">avatar/avatar-loud-alarm.svg &amp; .png</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Play Store Search Thumbnail Test <span class="pill">164px Width Legibility Check</span></h2>
+      <div class="thumb-strip">
+        <img src="screenshots/01-hero-youll-wake-up.png" alt="01"/>
+        <img src="screenshots/02-one-setup-repeating.png" alt="02"/>
+        <img src="screenshots/03-loud-random-sounds.png" alt="03"/>
+        <img src="screenshots/04-unstoppable-wakeup-timeline.png" alt="04"/>
+        <img src="screenshots/05-routines-reminders.png" alt="05"/>
+        <img src="screenshots/06-clean-minimal-no-ads.png" alt="06"/>
+      </div>
+    </section>
+
+    <section>
+      <h2>Play Store Screenshots <span class="pill">1080 × 1920 · 9:16 Portrait</span></h2>
+      <div class="shot-grid">
+        <div class="shot-card">
+          <img src="screenshots/01-hero-youll-wake-up.png" alt="Slide 1"/>
+          <div class="shot-meta"><span>01 · Hero Comparison + Avatar</span><span>1080×1920</span></div>
+        </div>
+        <div class="shot-card">
+          <img src="screenshots/02-one-setup-repeating.png" alt="Slide 2"/>
+          <div class="shot-meta"><span>02 · Set Once, Ring Every Min</span><span>1080×1920</span></div>
+        </div>
+        <div class="shot-card">
+          <img src="screenshots/03-loud-random-sounds.png" alt="Slide 3"/>
+          <div class="shot-meta"><span>03 · Different Loud Sound + Avatar</span><span>1080×1920</span></div>
+        </div>
+        <div class="shot-card">
+          <img src="screenshots/04-unstoppable-wakeup-timeline.png" alt="Slide 4"/>
+          <div class="shot-meta"><span>04 · No Quiet Gaps Timeline</span><span>1080×1920</span></div>
+        </div>
+        <div class="shot-card">
+          <img src="screenshots/05-routines-reminders.png" alt="Slide 5"/>
+          <div class="shot-meta"><span>05 · Every Daily Routine</span><span>1080×1920</span></div>
+        </div>
+        <div class="shot-card">
+          <img src="screenshots/06-clean-minimal-no-ads.png" alt="Slide 6"/>
+          <div class="shot-meta"><span>06 · Zero Clutter, Zero Ads</span><span>1080×1920</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
