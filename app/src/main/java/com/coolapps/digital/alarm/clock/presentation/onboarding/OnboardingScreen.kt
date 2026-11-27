@@ -213,7 +213,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 					}
 					DisplaySate.CreateFirstAlarm -> {
 						CreateFirstAlarmScreen(
-							onAlarmSetProceed = { viewModel.onNextClicked() },
+							onAlarmSetProceed = { _ -> viewModel.onNextClicked() },
 							linearProgressBar = {
 								LinearProgressIndicator(
 									progress = { animatedProgress },

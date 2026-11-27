@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Calendar
@@ -48,20 +49,23 @@ class AlarmPickerViewModel @AssistedInject constructor(
 		private val errorHandler: ErrorHandler,
 		private val alarmSoundRepository: AlarmSoundRepository,
 		@ApplicationContext val context: Context,
-		@Assisted private val alarmData: AlarmData?
+		@Assisted private val mode: AlarmEditorMode
 ) : ViewModel() {
 
 	@AssistedFactory
 	interface Factory {
-		fun create(alarmData: AlarmData?): AlarmPickerViewModel
+		fun create(mode: AlarmEditorMode): AlarmPickerViewModel
 	}
 
 	private val _uiState = MutableStateFlow(
 		AlarmPickerUiState(
-			alarmData = createDefaultAlarm(alarmData),
-			initialAlarm = alarmData,
+			alarmData = when (mode) {
+				is AlarmEditorMode.Create -> createDefaultAlarm(mode.preset)
+				is AlarmEditorMode.Edit -> mode.alarm
+			},
+			initialAlarm = (mode as? AlarmEditorMode.Edit)?.alarm,
 			areAllPermissionsGranted = PermissionUtils.allCriticalPermissionsGranted(context),
-			progress = if (alarmData == null) Progress.StartTime else Progress.FullEditor
+			progress = Progress.FullEditor
 		)
 	)
 	val uiState: StateFlow<AlarmPickerUiState> = _uiState.asStateFlow()
@@ -106,9 +110,10 @@ class AlarmPickerViewModel @AssistedInject constructor(
 	}
 
 	fun onSetAlarmClicked() {
-		analytics.captureEvent("set alarm clicked", mapOf("Ui state" to _uiState.value.toString()))
-
 		val current = _uiState.value
+		if (current.isLoading) return
+		analytics.captureEvent("set alarm clicked", mapOf("Ui state" to current.toString()))
+
 		val alarmToUse = current.alarmData.rollOverIfTimeIntervalPassed()
 		val validationResult = alarmToUse.validate()
 
@@ -119,7 +124,7 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			captureUiStateAndSendAnalytics(_uiState.value)
 			return
 		}
-		val areWeMissingSomePermission =PermissionUtils.allCriticalPermissionsGranted(context)
+		val areWeMissingSomePermission = PermissionUtils.allCriticalPermissionsGranted(context)
 		if (!areWeMissingSomePermission) {
 			val missing = PermissionUtils.getRequiredPermissionSteps(context)
 			_uiState.update { it.copy(showPermissionDialog = true, missingSteps = missing) }
@@ -128,15 +133,28 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			return
 		}
 
+		_uiState.update { it.copy(isLoading = true) }
 		viewModelScope.launch {
-			setNewOrUpdateAlarm(alarmToUse, current.initialAlarm)
-			_uiState.update { it.copy(alarmOperationCompletedGoBack = true) }
-			captureUiStateAndSendAnalytics(_uiState.value)
+			try {
+				val savedAlarm = setNewOrUpdateAlarm(alarmToUse, current.initialAlarm)
+				if (savedAlarm != null) {
+					_uiState.update {
+						it.copy(
+							alarmData = savedAlarm,
+							initialAlarm = savedAlarm,
+							completedAction = AlarmCompletionAction.Saved(savedAlarm),
+						)
+					}
+				}
+				captureUiStateAndSendAnalytics(_uiState.value)
+			} finally {
+				_uiState.update { it.copy(isLoading = false) }
+			}
 		}
 	}
 
 	fun consumeAlarmOperationCompleted() {
-		_uiState.update { it.copy(alarmOperationCompletedGoBack = false) }
+		_uiState.update { it.copy(completedAction = null) }
 	}
 
 	fun consumeSoundSelectionCompleted() {
@@ -273,7 +291,7 @@ class AlarmPickerViewModel @AssistedInject constructor(
 			alarmsController.deleteAlarmHandler(alarmData, context, alarmManager).fold(
 				onSuccess = {
 					analytics.captureEvent("alarm successfully deleted", mapOf("alarmId" to alarmData.id))
-					_uiState.update { it.copy(alarmOperationCompletedGoBack = true) }
+					_uiState.update { it.copy(completedAction = AlarmCompletionAction.Deleted) }
 					captureUiStateAndSendAnalytics(_uiState.value)
 				},
 				onError = { error ->
@@ -358,31 +376,32 @@ class AlarmPickerViewModel @AssistedInject constructor(
 		}
 	}
 
-	private fun setNewOrUpdateAlarm(newAlarmData: AlarmData, oldAlarm: AlarmData? ){
-		viewModelScope.launch {
-			logD("deleting the alarm $oldAlarm")
-			val alarmScheduledResult = alarmsController.startAlarmSeriesHandler(
-				alarm = newAlarmData.copy(id = oldAlarm?.id ?: 0),
+	private suspend fun setNewOrUpdateAlarm(newAlarmData: AlarmData, oldAlarm: AlarmData?): AlarmData? {
+		logD("deleting the alarm $oldAlarm")
+		val alarmScheduledResult = withContext(NonCancellable) {
+			alarmsController.startAlarmSeriesHandler(
+				alarm = newAlarmData.copy(id = oldAlarm?.id ?: newAlarmData.id),
 				alarmManager, context
 			)
-			alarmScheduledResult.fold(
-				onSuccess = {
-					launch {
-						val eventText = if (oldAlarm != null) "alarm_edited"  else "new_alarm_set"
-						analytics.captureEvent(eventText,
-							mapOf(
-								"alarmData" to newAlarmData.toString(),
-								"oldAlarm" to oldAlarm.toString(),
-							)
-						)
-					}
-				},
-				onError = { error ->
-					errorHandler.handleError(Result.Failure(error))
-					logD("there is a error in editing new alarm-->${error.internalErrorMessage}")
-				}
-			)
 		}
+		return alarmScheduledResult.fold(
+			onSuccess = { savedAlarm ->
+				val eventText = if (oldAlarm != null) "alarm_edited" else "new_alarm_set"
+				analytics.captureEvent(
+					eventText,
+					mapOf(
+						"alarmData" to savedAlarm.toString(),
+						"oldAlarm" to oldAlarm.toString(),
+					)
+				)
+				savedAlarm
+			},
+			onError = { error ->
+				errorHandler.handleError(Result.Failure(error))
+				logD("there is a error in editing new alarm-->${error.internalErrorMessage}")
+				null
+			}
+		)
 	}
 
 	fun onRepeatDayClicked(day: DayOfWeek) {

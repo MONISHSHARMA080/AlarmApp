@@ -9,6 +9,16 @@ import java.util.Calendar
 
 enum class Progress{StartTime, FullEditor}
 
+sealed interface AlarmEditorMode {
+	data class Create(val preset: AlarmData? = null) : AlarmEditorMode
+	data class Edit(val alarm: AlarmData) : AlarmEditorMode
+}
+
+sealed interface AlarmCompletionAction {
+	data class Saved(val alarmData: AlarmData) : AlarmCompletionAction
+	data object Deleted : AlarmCompletionAction
+}
+
 /** [areAllPermissionsGranted] - make sure to set the right value when loading this, as the true is a false value */
 data class AlarmPickerUiState(
 		val alarmData: AlarmData = AlarmData(
@@ -33,7 +43,7 @@ data class AlarmPickerUiState(
 		val pendingRepeatDay: DayOfWeek? = null, // remember what the user was trying to do
 		val pendingSound: AlarmSound? = null,
 		val pendingRingDuration: Long? = null,
-		val alarmOperationCompletedGoBack: Boolean = false,
+		val completedAction: AlarmCompletionAction? = null,
 		val soundSelectionCompletedGoBack: Boolean = false,
-		val progress: Progress = if (initialAlarm == null) Progress.StartTime else Progress.FullEditor
+		val progress: Progress = Progress.FullEditor
 )

@@ -24,6 +24,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -122,13 +124,14 @@ fun PermissionScreen(
 	}
 
 
-	Column(
-		modifier = Modifier.fillMaxSize()
+	Box(
+		modifier = Modifier.fillMaxSize(),
+		contentAlignment = Alignment.TopCenter
 	) {
 		Column(
 			modifier = Modifier
-				.fillMaxWidth()
-				.weight(1f)
+				.widthIn(max = 600.dp)
+				.fillMaxSize()
 				.padding(horizontal = 24.dp),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
@@ -237,7 +240,7 @@ fun PermissionScreen(
 					.weight(1f, fill = false),
 				horizontalArrangement = Arrangement.spacedBy(16.dp),
 				verticalArrangement = Arrangement.spacedBy(16.dp),
-				contentPadding = PaddingValues(bottom = 24.dp)
+				contentPadding = PaddingValues(bottom = 140.dp)
 			) {
 				items(missingSteps) { step ->
 					val isPermanentlyDenied = step == PermissionStep.PostNotification && notificationPermanentlyDenied
@@ -283,44 +286,6 @@ fun PermissionScreen(
 			}
 			Spacer(modifier = Modifier.weight(0.2f))
 		}
-
-//		Box(
-//			modifier =
-//				Modifier.fillMaxWidth()
-//					.background(colorScheme.background)
-//					.navigationBarsPadding()
-//					.padding(26.dp)
-//					.padding(bottom = 20.dp)
-//					.animateContentSize(),
-//			contentAlignment = Alignment.Center,
-//		) {
-//			Row(
-//				modifier = Modifier.fillMaxWidth(),
-//				horizontalArrangement = Arrangement.End,
-//				verticalAlignment = Alignment.CenterVertically
-//			) {
-//				Button(
-//					onClick = {
-//						view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-//						onNext()
-//					},
-//					enabled = allCriticalGranted,
-//					modifier = Modifier
-//						.fillMaxWidth()
-//						.height(56.dp),
-//					shape = shapes.extraLarge,
-//					colors = ButtonDefaults.buttonColors(
-//						containerColor = colorScheme.primaryContainer,
-//						contentColor = colorScheme.onPrimaryContainer
-//					)
-//				) {
-//					Text(
-//						text = stringResource(if (allCriticalGranted)R.string.permission_continue else R.string.permission_grant_permissions),
-//						style = typography.titleMedium
-//					)
-//				}
-//			}
-//		}
 	}
 }
 

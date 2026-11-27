@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		val splashScreen = installSplashScreen()
 		super.onCreate(savedInstanceState)
+		splashScreen.setKeepOnScreenCondition { navViewModel.isFirstLaunch.value == null }
 		val deepLinkScreen: Screen? = parseDeepLinkIntent(intent)
 
 		coroutineScope.launch(Dispatchers.Main) {
@@ -71,8 +72,7 @@ class MainActivity : ComponentActivity() {
 			"alarmapp" if data.host == "home" -> Screen.AlarmContainer
 			"alarmapp" if data.host == "settings" -> Screen.SettingsScreen
 			"alarmapp" if data.host == "create" -> Screen.AlarmCreateRoute
-			// Onboarding disabled — kept for future flow
-			// "alarmapp" if data.host == "onboarding" -> Screen.OnboardingScreen
+			"alarmapp" if data.host == "onboarding" -> Screen.OnboardingScreen
 			else -> null
 		}
 	}

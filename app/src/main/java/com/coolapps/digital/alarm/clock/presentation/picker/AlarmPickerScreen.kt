@@ -77,7 +77,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.coolapps.digital.alarm.clock.R
 import com.coolapps.digital.alarm.clock.data.local.AlarmData
@@ -123,8 +122,8 @@ fun EditAlarmScreen(
 		logD("ui state:$uiState")
 		logD("isPremium:$isPremium")
 	}
-	LaunchedEffect(uiState.alarmOperationCompletedGoBack) {
-		if (uiState.alarmOperationCompletedGoBack) {
+	LaunchedEffect(uiState.completedAction) {
+		if (uiState.completedAction != null) {
 			viewModel.consumeAlarmOperationCompleted()
 			alarmSetProceed()
 		}
@@ -218,7 +217,7 @@ fun EditAlarmScreen(
 						currentProgress = Progress.FullEditor,
 						uiState = uiState,
 						onAction = {
-							if (canSetAlarm) {
+							if (canSetAlarm && !uiState.isLoading) {
 								viewModel.onSetAlarmClicked()
 								view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
 							}
@@ -260,19 +259,21 @@ fun EditAlarmScreen(
 )
 @Composable
 fun NewAlarmScreen(
-		alarmSetProceed: () -> Unit,
+		alarmSetProceed: (AlarmData) -> Unit,
 		settingAlarmCancelled: () -> Unit,
 		onNavigateToSoundList: () -> Unit,
 		onNavigateToMissionList: () -> Unit,
 		onShowPaywall: (PaywallTriggerType) -> Unit,
-		linearProgressBar: (@Composable () -> Unit)? = null,
 		viewModel: AlarmPickerViewModel,
-		// kept for API compatibility but unused in this route (no shared-element)
+		showTopBar: Boolean = true,
+		cancelLabel: String = stringResource(R.string.alarm_picker_cancel),
+		linearProgressBar: (@Composable () -> Unit)? = null,
 		sharedTransitionScope: SharedTransitionScope? = null,
 		animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
-	val fromOnboarding = linearProgressBar != null
-	logD("fromOnboarding:$fromOnboarding")
+	val fromLegacyStepper = linearProgressBar != null
+	val effectiveShowTopBar = showTopBar && !fromLegacyStepper
+	logD("fromLegacyStepper:$fromLegacyStepper")
 
 	val uiState by viewModel.uiState.collectAsState()
 	val isPremium by viewModel.isPremium.collectAsState()
@@ -284,10 +285,13 @@ fun NewAlarmScreen(
 		logD("ui state:$uiState")
 		logD("isPremium:$isPremium")
 	}
-	LaunchedEffect(uiState.alarmOperationCompletedGoBack) {
-		if (uiState.alarmOperationCompletedGoBack) {
-			viewModel.consumeAlarmOperationCompleted()
-			alarmSetProceed()
+	LaunchedEffect(uiState.completedAction) {
+		when (val action = uiState.completedAction) {
+			is AlarmCompletionAction.Saved -> {
+				viewModel.consumeAlarmOperationCompleted()
+				alarmSetProceed(action.alarmData)
+			}
+			else -> Unit
 		}
 	}
 	// Paywall disabled in this repo
@@ -327,7 +331,7 @@ fun NewAlarmScreen(
 	}
 
 	val horizontalPadding = rememberAdaptiveHorizontalPadding()
-	val currentProgress = if (fromOnboarding) uiState.progress else Progress.FullEditor
+	val currentProgress = if (fromLegacyStepper) uiState.progress else Progress.FullEditor
 
 	val alarmTimePickerState = key(currentProgress, uiState.alarmData.alarmTime) {
 		rememberTimePickerState(
@@ -338,9 +342,9 @@ fun NewAlarmScreen(
 	}
 
 	Scaffold(
-		contentWindowInsets = WindowInsets.safeDrawing,
+		contentWindowInsets = if (effectiveShowTopBar) WindowInsets.safeDrawing else WindowInsets(0),
 		topBar = {
-			if (!fromOnboarding) {
+			if (effectiveShowTopBar) {
 				ExpressiveAlarmTopBar(
 					onBackClick = { settingAlarmCancelled() }
 				)
@@ -351,7 +355,7 @@ fun NewAlarmScreen(
 				modifier = Modifier
 					.fillMaxWidth()
 					.background(colorScheme.background)
-					.navigationBarsPadding()
+					.then(if (effectiveShowTopBar) Modifier.navigationBarsPadding() else Modifier)
 					.padding(16.dp)
 					.padding(bottom = 20.dp),
 				contentAlignment = Alignment.Center
@@ -364,12 +368,13 @@ fun NewAlarmScreen(
 					CancelAndDeleteButton(
 						currentProgress = currentProgress,
 						isNewAlarm = true,
-						fromOnboarding = fromOnboarding,
+						fromOnboarding = fromLegacyStepper,
+						cancelLabel = cancelLabel,
 						onClick = {
 							when (currentProgress) {
 								Progress.StartTime -> settingAlarmCancelled()
 								Progress.FullEditor -> {
-									if (fromOnboarding) {
+									if (fromLegacyStepper) {
 										if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 											view.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
 										}
@@ -386,7 +391,7 @@ fun NewAlarmScreen(
 						currentProgress = currentProgress,
 						uiState = uiState,
 						onAction = {
-							if (fromOnboarding) {
+							if (fromLegacyStepper) {
 								when (currentProgress) {
 									Progress.StartTime -> {
 										val selectedAlarmTime = (uiState.alarmData.alarmTimeCalendar.clone() as Calendar).apply {
@@ -400,7 +405,7 @@ fun NewAlarmScreen(
 									Progress.FullEditor -> {
 										val isInactiveEdit = uiState.initialAlarm?.isReadyToUse == false
 										val canSetAlarm = uiState.validationResult == AlarmDataValidationResult.Success || isInactiveEdit
-										if (canSetAlarm) {
+										if (canSetAlarm && !uiState.isLoading) {
 											viewModel.onSetAlarmClicked()
 											view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
 										}
@@ -409,7 +414,7 @@ fun NewAlarmScreen(
 							} else {
 								val isInactiveEdit = uiState.initialAlarm?.isReadyToUse == false
 								val canSetAlarm = uiState.validationResult == AlarmDataValidationResult.Success || isInactiveEdit
-								if (canSetAlarm) {
+								if (canSetAlarm && !uiState.isLoading) {
 									viewModel.onSetAlarmClicked()
 									view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
 								}
@@ -669,6 +674,7 @@ fun CancelAndDeleteButton(
         modifier: Modifier = Modifier,
         isNewAlarm: Boolean,
         fromOnboarding: Boolean = false,
+        cancelLabel: String = stringResource(R.string.alarm_picker_cancel),
         onClick: () -> Unit,
 ) {
   val isDeleteMode = currentProgress == Progress.FullEditor && !isNewAlarm
@@ -741,7 +747,7 @@ fun CancelAndDeleteButton(
 			  text = when (progress) {
 				Progress.StartTime -> stringResource(R.string.alarm_picker_cancel)
 				Progress.FullEditor -> if (isNewAlarm && !fromOnboarding) {
-					stringResource(R.string.alarm_picker_cancel)
+					cancelLabel
 				} else {
 					stringResource(R.string.alarm_picker_previous)
 				}
@@ -789,6 +795,7 @@ fun PrimaryActionButton(
       Progress.StartTime -> {
         Button(
                 onClick = onAction,
+                enabled = !uiState.isLoading,
                 interactionSource = interactionSource,
                 colors = ButtonDefaults.buttonColors(
                         containerColor = colorScheme.primary,
@@ -834,6 +841,7 @@ fun PrimaryActionButton(
 
         Button(
                 onClick = onAction,
+                enabled = !uiState.isLoading,
                 interactionSource = interactionSource,
                 colors = ButtonDefaults.buttonColors(
                         containerColor = containerColor,

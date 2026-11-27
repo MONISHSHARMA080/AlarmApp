@@ -81,7 +81,7 @@ class AlarmPickerViewModelFlagsTest {
 			errorHandler = mockk(),
 			alarmSoundRepository = alarmSoundRepository,
 			context = context,
-			alarmData = null,
+			mode = AlarmEditorMode.Create(),
 		)
 		return Harness(viewModel, premium)
 	}

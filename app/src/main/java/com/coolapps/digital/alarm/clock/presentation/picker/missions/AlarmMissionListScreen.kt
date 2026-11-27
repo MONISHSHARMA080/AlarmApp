@@ -100,9 +100,11 @@ import com.coolapps.digital.alarm.clock.presentation.ExpressiveAlarmTheme
 fun AlarmMissionListScreen(
 	onBack: () -> Unit,
 	onTrackEvent: (String, Map<String, Any>) -> Unit,
+	showTopBar: Boolean = true,
 	linearProgressBar: (@Composable () -> Unit)? = null,
 ) {
 	val fromOnboarding = linearProgressBar != null
+	val effectiveShowTopBar = showTopBar && !fromOnboarding
 	val view = LocalView.current
 
 	var selectedMission by rememberSaveable { mutableStateOf<AlarmMission?>(null) }
@@ -123,12 +125,12 @@ fun AlarmMissionListScreen(
 
 	Scaffold(
 		containerColor = MaterialTheme.colorScheme.surface,
-		contentWindowInsets = WindowInsets.safeDrawing,
+		contentWindowInsets = if (effectiveShowTopBar) WindowInsets.safeDrawing else WindowInsets(0),
 		modifier = Modifier.let {
-			if (!fromOnboarding) it.nestedScroll(scrollBehavior.nestedScrollConnection) else it
+			if (effectiveShowTopBar) it.nestedScroll(scrollBehavior.nestedScrollConnection) else it
 		},
 		topBar = {
-			if (!fromOnboarding) {
+			if (effectiveShowTopBar) {
 				LargeFlexibleTopAppBar(
 					title = {
 						Text(
@@ -180,7 +182,7 @@ fun AlarmMissionListScreen(
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.navigationBarsPadding()
+					.then(if (effectiveShowTopBar) Modifier.navigationBarsPadding() else Modifier)
 					.padding(horizontal = 20.dp, vertical = 16.dp),
 				contentAlignment = Alignment.Center
 			) {
@@ -293,6 +295,18 @@ fun AlarmMissionListScreen(
 								modifier = Modifier.weight(1f)
 							)
 						}
+					}
+				} else if (!showTopBar) {
+					item(
+						key = "missions_subtitle",
+						span = { GridItemSpan(maxLineSpan) }
+					) {
+						Text(
+							text = stringResource(R.string.alarm_missions_subtitle),
+							style = MaterialTheme.typography.bodyMedium,
+							color = MaterialTheme.colorScheme.onSurfaceVariant,
+							modifier = Modifier.padding(bottom = 4.dp)
+						)
 					}
 				}
 

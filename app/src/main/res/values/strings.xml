@@ -309,5 +309,17 @@
     <!-- Alarm Activity -->
     <string name="stop_button">Stop</string>
 
+    <!-- Onboarding Wake-up Flow -->
+    <string name="onboarding_wakeup_title">When do you wake up?</string>
+    <string name="onboarding_wakeup_default_alarm_message">Wake up</string>
+    <string name="onboarding_preview_title">You\'re all set</string>
+    <string name="onboarding_preview_subtitle">We\'ll send you an alarm notification at %1$s.</string>
+    <string name="onboarding_preview_summary_pill">%1$s · %2$s</string>
+    <string name="onboarding_preview_app_time">%1$s · %2$s</string>
+    <string name="onboarding_preview_ringing">Alarm notification</string>
+    <string name="onboarding_preview_every_day">Every day</string>
+    <string name="onboarding_preview_weekdays">Weekdays</string>
+    <string name="onboarding_preview_weekends">Weekends</string>
+    <string name="onboarding_preview_done">Done</string>
 
 </resources>

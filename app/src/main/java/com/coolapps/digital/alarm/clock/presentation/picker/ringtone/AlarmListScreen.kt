@@ -27,11 +27,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -91,10 +93,12 @@ import com.coolapps.digital.alarm.clock.data.paywall.PaywallTriggerType
 	previewingUri: Uri?,
 	onBack: () -> Unit,
 	onProceed: (AlarmSound?) -> Unit,
+	showTopBar: Boolean = true,
 	linearProgressBar: (@Composable () -> Unit)? = null,
 	onShowPaywall: (PaywallTriggerType) -> Unit = {}
 ) {
 	val fromOnboarding = linearProgressBar != null
+	val effectiveShowTopBar = showTopBar && !fromOnboarding
 	val view = LocalView.current
 	val listOfAlarms by vm.listOfAlarms.collectAsStateWithLifecycle()
 	val randomPreviewing by vm.previewingRandom.collectAsStateWithLifecycle()
@@ -123,10 +127,11 @@ import com.coolapps.digital.alarm.clock.data.paywall.PaywallTriggerType
 
 	Scaffold(
 		containerColor = MaterialTheme.colorScheme.surface,
+		contentWindowInsets = if (effectiveShowTopBar) WindowInsets.safeDrawing else WindowInsets(0),
 		modifier = Modifier
-			.let { if (!fromOnboarding) it.nestedScroll(scrollBehavior.nestedScrollConnection) else it },
+			.let { if (effectiveShowTopBar) it.nestedScroll(scrollBehavior.nestedScrollConnection) else it },
 		topBar = {
-			if (!fromOnboarding) {
+			if (effectiveShowTopBar) {
 				val backInteractionSource = remember { MutableInteractionSource() }
 				val isBackPressed by backInteractionSource.collectIsPressedAsState()
 				val backCorner by animateDpAsState(
@@ -189,7 +194,7 @@ import com.coolapps.digital.alarm.clock.data.paywall.PaywallTriggerType
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.navigationBarsPadding()
+					.then(if (effectiveShowTopBar) Modifier.navigationBarsPadding() else Modifier)
 					.padding(horizontal = 20.dp, vertical = 16.dp),
 				contentAlignment = Alignment.Center
 			) {

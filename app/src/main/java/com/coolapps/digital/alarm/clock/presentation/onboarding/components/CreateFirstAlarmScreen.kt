@@ -1,7 +1,5 @@
 package com.coolapps.digital.alarm.clock.presentation.onboarding.components
 
-import com.coolapps.digital.alarm.clock.presentation.onboarding.ButtonState
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -11,18 +9,25 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.coolapps.digital.alarm.clock.R
+import com.coolapps.digital.alarm.clock.data.local.AlarmData
 import com.coolapps.digital.alarm.clock.data.paywall.PaywallTriggerType
-import com.coolapps.digital.alarm.clock.presentation.picker.NewAlarmScreen
+import com.coolapps.digital.alarm.clock.presentation.onboarding.ButtonState
+import com.coolapps.digital.alarm.clock.presentation.picker.AlarmEditorMode
 import com.coolapps.digital.alarm.clock.presentation.picker.AlarmPickerViewModel
-import com.coolapps.digital.alarm.clock.presentation.picker.ringtone.ListAlarmSoundScreen
+import com.coolapps.digital.alarm.clock.presentation.picker.NewAlarmScreen
 import com.coolapps.digital.alarm.clock.presentation.picker.missions.AlarmMissionListScreen
+import com.coolapps.digital.alarm.clock.presentation.picker.ringtone.ListAlarmSoundScreen
 
 private enum class CreateFirstAlarmStep {
 	Picker,
@@ -30,20 +35,38 @@ private enum class CreateFirstAlarmStep {
 	MissionList
 }
 
-
 @Composable
 fun CreateFirstAlarmScreen(
-		onAlarmSetProceed: () -> Unit,
+		onAlarmSetProceed: (AlarmData) -> Unit,
 		modifier: Modifier = Modifier,
+		onShowPaywall: (PaywallTriggerType) -> Unit = {},
+		editorMode: AlarmEditorMode = AlarmEditorMode.Create(),
+		alarmPickerViewModel: AlarmPickerViewModel = hiltViewModel<AlarmPickerViewModel, AlarmPickerViewModel.Factory> { factory ->
+			factory.create(editorMode)
+		},
+		onBackOverrideChanged: ((() -> Unit)?) -> Unit = {},
+		onCancelled: () -> Unit = {},
 		linearProgressBar: (@Composable () -> Unit)? = null,
 		onButtonStateChange: (ButtonState) -> Unit = {},
-		onShowPaywall: (PaywallTriggerType) -> Unit = {}
 ) {
-	// buttonState is now pre-set by the parent before this screen composes
-	val alarmPickerViewModel : AlarmPickerViewModel = hiltViewModel<AlarmPickerViewModel, AlarmPickerViewModel.Factory> { factory -> factory.create(null) }
-	var currentStep by remember { mutableStateOf(CreateFirstAlarmStep.Picker) }
+	var currentStep by rememberSaveable { mutableStateOf(CreateFirstAlarmStep.Picker) }
 	val selected by alarmPickerViewModel.selectedAlarmSound.collectAsStateWithLifecycle()
 	val previewing by alarmPickerViewModel.previewingSound.collectAsStateWithLifecycle()
+
+	LaunchedEffect(currentStep) {
+		onBackOverrideChanged(
+			if (currentStep != CreateFirstAlarmStep.Picker) {
+				{ currentStep = CreateFirstAlarmStep.Picker }
+			} else {
+				null
+			}
+		)
+	}
+	DisposableEffect(Unit) {
+		onDispose {
+			onBackOverrideChanged(null)
+		}
+	}
 
 	BackHandler(enabled = currentStep != CreateFirstAlarmStep.Picker) {
 		currentStep = CreateFirstAlarmStep.Picker
@@ -77,7 +100,6 @@ fun CreateFirstAlarmScreen(
 			CreateFirstAlarmStep.Picker -> {
 				NewAlarmScreen(
 					alarmSetProceed = onAlarmSetProceed,
-					
 					viewModel = alarmPickerViewModel,
 					onNavigateToSoundList = {
 						currentStep = CreateFirstAlarmStep.SoundList
@@ -85,15 +107,20 @@ fun CreateFirstAlarmScreen(
 					onNavigateToMissionList = {
 						currentStep = CreateFirstAlarmStep.MissionList
 					},
-					settingAlarmCancelled = {
-						// Optionally handle cancellation, maybe go back to previous Onboarding screen
-					},
+					settingAlarmCancelled = onCancelled,
 					onShowPaywall = onShowPaywall,
+					showTopBar = false,
+					cancelLabel = stringResource(R.string.alarm_picker_previous),
 					linearProgressBar = linearProgressBar
 				)
 			}
 
 			CreateFirstAlarmStep.SoundList -> {
+				DisposableEffect(Unit) {
+					onDispose {
+						alarmPickerViewModel.stopPreview()
+					}
+				}
 				ListAlarmSoundScreen(
 					alarmPickerViewModel,
 					previewingUri = previewing?.soundUri,
@@ -104,6 +131,7 @@ fun CreateFirstAlarmScreen(
 					onProceed = { sound ->
 						alarmPickerViewModel.onAlarmSoundSelected(sound)
 					},
+					showTopBar = false,
 					linearProgressBar = linearProgressBar,
 					onShowPaywall = onShowPaywall
 				)
@@ -115,6 +143,7 @@ fun CreateFirstAlarmScreen(
 						currentStep = CreateFirstAlarmStep.Picker
 					},
 					onTrackEvent = { event, props -> alarmPickerViewModel.captureEvent(event, props) },
+					showTopBar = false,
 					linearProgressBar = linearProgressBar
 				)
 			}

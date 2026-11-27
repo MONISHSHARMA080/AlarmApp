@@ -43,7 +43,7 @@ fun EditAlarmFlowScreen(
 		animatedVisibilityScope: AnimatedVisibilityScope
 ) {
 	val viewModel = hiltViewModel<AlarmPickerViewModel, AlarmPickerViewModel.Factory> { factory ->
-		factory.create(alarmData)
+		factory.create(AlarmEditorMode.Edit(alarmData))
 	}
 	val flowBackStack = rememberNavBackStack(AlarmFlowRoute.AlarmPicker)
 	val currentScreen = flowBackStack.lastOrNull() as? AlarmFlowRoute
@@ -158,7 +158,7 @@ fun NewAlarmFlowScreen(
 	onShowPaywall: (PaywallTriggerType) -> Unit
 ) {
 	val viewModel = hiltViewModel<AlarmPickerViewModel, AlarmPickerViewModel.Factory> { factory ->
-		factory.create(null)
+		factory.create(AlarmEditorMode.Create())
 	}
 	val flowBackStack = rememberNavBackStack(AlarmFlowRoute.AlarmPicker)
 	val currentScreen = flowBackStack.lastOrNull() as? AlarmFlowRoute
@@ -219,7 +219,7 @@ fun NewAlarmFlowScreen(
 				val resultBus = LocalResultEventBus.current
 				NewAlarmScreen(
 					viewModel = viewModel,
-					alarmSetProceed = {
+					alarmSetProceed = { _ ->
 						resultBus.sendResult(true)
 						onCloseFlow()
 					},
